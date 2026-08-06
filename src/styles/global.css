@@ -1,0 +1,64 @@
+:root{
+    /* Paleta del sistema: gris, azul y rojo */
+    --color-primary:#2563eb;
+    --color-primary-dark:#1d4ed8;
+    --color-primary-darker:#1e40af;
+    --color-primary-light:#dbeafe;
+    --color-primary-lighter:#eff6ff;
+
+    --color-danger:#dc2626;
+    --color-danger-dark:#b91c1c;
+    --color-danger-light:#fee2e2;
+
+    --color-gray-900:#1e293b;
+    --color-gray-700:#334155;
+    --color-gray-600:#475569;
+    --color-gray-500:#64748b;
+    --color-gray-400:#94a3b8;
+    --color-gray-300:#cbd5e1;
+    --color-gray-200:#e2e8f0;
+    --color-gray-100:#f1f5f9;
+    --color-gray-50:#f8fafc;
+
+    --color-surface:#ffffff;
+    --color-bg:#eef1f6;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family: Arial, Helvetica, sans-serif;
+    background:var(--color-bg);
+    color:var(--color-gray-900);
+}
+
+a{
+    text-decoration:none;
+}
+
+ul{
+    list-style:none;
+}
+
+/* Los navegadores basados en Chromium dibujan un borde/relleno nativo
+   propio para input[type="search"] (incluida la "x" para limpiar), que se
+   suma visualmente al borde definido por cada página y se ve como un doble
+   borde. Se desactiva ese estilo nativo para que solo se vea el borde del
+   diseño. */
+input[type="search"]{
+    -webkit-appearance:none !important;
+    appearance:none !important;
+    border-radius:0;
+}
+
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration{
+    -webkit-appearance:none !important;
+    appearance:none !important;
+}

@@ -1,0 +1,37 @@
+.back-home-link {
+  min-height: 44px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 0 18px;
+  color: #2563eb;
+  font-weight: 700;
+  border: 1px solid #2563eb;
+  border-radius: 9px;
+  background-color: #ffffff;
+  transition:
+    color 0.2s ease,
+    background-color 0.2s ease,
+    transform 0.2s ease;
+}
+
+.back-home-link:hover {
+  color: #ffffff;
+  background-color: #2563eb;
+  transform: translateY(-1px);
+}
+
+.back-home-link:focus-visible {
+  color: #ffffff;
+  outline: 3px solid rgba(37, 99, 235, 0.22);
+  outline-offset: 3px;
+  background-color: #2563eb;
+}
+
+@media (max-width: 700px) {
+  .back-home-link {
+    width: 100%;
+  }
+}

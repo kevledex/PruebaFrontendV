@@ -1,0 +1,7 @@
+.app-card {
+  color: #1e293b;
+  border: 1px solid #e2e8f0;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.08);
+}

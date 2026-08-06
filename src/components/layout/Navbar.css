@@ -1,0 +1,88 @@
+.system-navbar {
+  min-height: 75px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 35px;
+  color: #ffffff;
+  background-color: #2563eb;
+  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.16);
+}
+
+.navbar-brand-container,
+.navbar-user,
+.user-information {
+  display: flex;
+  align-items: center;
+}
+
+.navbar-brand-container {
+  gap: 12px;
+}
+
+.navbar-logo {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+  padding: 4px;
+  border-radius: 50%;
+  background-color: #ffffff;
+}
+
+.navbar-brand-container div,
+.user-information div {
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar-brand-container strong {
+  font-size: 1.1rem;
+}
+
+.navbar-brand-container span,
+.user-information span {
+  font-size: 0.8rem;
+  opacity: 0.85;
+}
+
+.navbar-user {
+  gap: 25px;
+}
+
+.user-information {
+  gap: 10px;
+}
+
+.user-information i {
+  font-size: 2rem;
+}
+
+.logout-button {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 9px 15px;
+  color: #ffffff;
+  background-color: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  border-radius: 8px;
+}
+
+.logout-button:hover {
+  color: #2563eb;
+  background-color: #ffffff;
+}
+
+@media (max-width: 700px) {
+  .system-navbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 15px;
+    padding: 15px 20px;
+  }
+
+  .navbar-user {
+    width: 100%;
+    justify-content: space-between;
+  }
+}

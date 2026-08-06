@@ -1,0 +1,148 @@
+.login-page {
+  position: relative;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 30px;
+  overflow: hidden;
+}
+
+.login-page::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(rgba(15, 23, 42, 0.55), rgba(15, 23, 42, 0.55)),
+    url("https://i.postimg.cc/WzLjtkk3/escuela-venezuela-exterior.jpg");
+  background-size: cover;
+  background-position: center;
+  filter: blur(2px);
+  transform: scale(1.05);
+  z-index: 0;
+}
+
+.login-container {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 1050px;
+  display: grid;
+  grid-template-columns: 1fr 420px;
+  overflow: hidden;
+  border-radius: 24px;
+  background-color: #ffffff;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.22);
+}
+
+.login-information {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 60px;
+  color: #ffffff;
+  background:
+    linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+    url("/school-background.jpg") center/cover;
+}
+
+.institution-logo img {
+  width: 300px;
+  height: 300px; 
+  justify-content: center;
+  padding: 5px;
+  border-radius: 50%;
+  background-color: #ffffff;
+  display: block;
+  margin: 0 auto 25px;
+}
+
+.login-subtitle {
+  margin-bottom: 8px;
+  color: #93c5fd;
+  font-size: 1.1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.login-information h1 {
+  margin-bottom: 5px;
+  font-size: 2.1rem;
+  font-weight: 700;
+}
+
+.login-information h2 {
+  margin-top: 1px;
+  margin-bottom: 28px;
+  color: #93c5fd;
+  font-size: 2.4rem;
+  font-weight: 800;
+}
+
+.login-description {
+  max-width: 500px;
+  margin: 0;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.login-card {
+  padding: 65px 45px;
+}
+
+.login-card-header {
+  margin-bottom: 35px;
+  text-align: center;
+}
+
+.login-card-header i {
+  color: #2563eb;
+  font-size: 4rem;
+}
+
+.login-card-header h3 {
+  margin-top: 12px;
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.login-card-header p {
+  color: #64748b;
+}
+
+.login-button {
+  padding: 12px;
+  color: #ffffff;
+  font-weight: 700;
+  background-color: #2563eb;
+  border: none;
+}
+
+.login-button:hover {
+  color: #ffffff;
+  background-color: #1d4ed8;
+}
+
+@media (max-width: 850px) {
+  .login-container {
+    max-width: 500px;
+    grid-template-columns: 1fr;
+  }
+
+  .login-information {
+    padding: 40px 30px;
+    text-align: center;
+  }
+
+  .institution-logo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .login-card {
+    padding: 40px 30px;
+  }
+}

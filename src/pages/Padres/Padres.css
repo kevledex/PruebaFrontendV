@@ -1,0 +1,372 @@
+.parents-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background-color: #f8fafc;
+}
+
+.parents-content {
+  width: 100%;
+  max-width: 1250px;
+  flex: 1;
+  margin: 0 auto;
+  padding: 35px 25px;
+}
+
+.parents-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.parents-label,
+.section-label {
+  margin-bottom: 5px;
+  color: #2563eb;
+  font-size: 0.85rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+}
+
+.parents-header h1 {
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.parents-header p {
+  margin-bottom: 0;
+  color: #64748b;
+}
+
+.student-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px 30px;
+  margin-bottom: 25px;
+  border-left: 5px solid #2563eb;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(38, 50, 56, 0.08);
+}
+
+.student-avatar {
+  width: 75px;
+  height: 75px;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  color: #2563eb;
+  border-radius: 50%;
+  background-color: #dbeafe;
+  font-size: 2.4rem;
+}
+
+.student-information {
+  flex: 1;
+}
+
+.student-information > span,
+.student-status span {
+  display: block;
+  margin-bottom: 3px;
+  color: #64748b;
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.student-information h2 {
+  margin-bottom: 10px;
+  color: #1e293b;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.student-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 30px;
+}
+
+.student-details p {
+  margin: 0;
+  color: #475569;
+  font-size: 0.92rem;
+}
+
+.student-status {
+  padding: 12px 18px;
+  text-align: center;
+  border-radius: 10px;
+  background-color: #dbeafe;
+}
+
+.student-status strong {
+  color: #2563eb;
+}
+
+.grades-section {
+  padding: 30px;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(38, 50, 56, 0.08);
+}
+
+.grades-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 20px;
+}
+
+.grades-header h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.6rem;
+  font-weight: 800;
+}
+
+.grading-hint {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  max-width: 290px;
+  padding: 10px 13px;
+  color: #2563eb;
+  border-radius: 9px;
+  background-color: #dbeafe;
+  font-size: 0.84rem;
+  font-weight: 700;
+}
+
+.period-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.period-filter label {
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.period-filter select {
+  min-width: 220px;
+  padding: 10px 36px 10px 12px;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background-color: #ffffff;
+  outline: none;
+}
+
+.period-filter select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.selected-period {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 15px;
+  margin-bottom: 20px;
+  color: #2563eb;
+  border-radius: 8px;
+  background-color: #dbeafe;
+}
+
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.grades-table th,
+.grades-table td {
+  padding: 14px 12px;
+  text-align: left;
+  border-bottom: 1px solid #e2e8f0;
+  white-space: nowrap;
+}
+
+.grades-table th {
+  color: #ffffff;
+  font-size: 0.85rem;
+  font-weight: 700;
+  background-color: #2563eb;
+}
+
+.grades-table th:first-child {
+  border-radius: 8px 0 0 0;
+}
+
+.grades-table th:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.grades-table tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+.subject-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #1e293b;
+  font-weight: 700;
+}
+
+.subject-name i {
+  color: #2563eb;
+}
+
+.grade-average {
+  color: #2563eb;
+  font-size: 1rem;
+}
+
+.trimester-grade {
+  display: inline-block;
+  min-width: 48px;
+  padding: 7px 10px;
+  color: #2563eb;
+  border-radius: 9px;
+  background-color: #dbeafe;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.exam-grade {
+  color: #334155;
+  font-size: 1rem;
+}
+
+.project-grade {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 10px;
+  color: #1d4ed8;
+  border-radius: 9px;
+  background-color: #dbeafe;
+  font-weight: 800;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 11px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  border-radius: 20px;
+}
+
+.status-badge.approved {
+  color: #1d4ed8;
+  background-color: #dbeafe;
+}
+
+.status-badge.failed {
+  color: #dc2626;
+  background-color: #fee2e2;
+}
+
+.academic-summary {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+  margin-top: 25px;
+}
+
+.summary-card {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px;
+  border-radius: 14px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 24px rgba(38, 50, 56, 0.08);
+}
+
+.summary-icon {
+  width: 55px;
+  height: 55px;
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  color: #2563eb;
+  border-radius: 13px;
+  background-color: #dbeafe;
+  font-size: 1.6rem;
+}
+
+.summary-card span {
+  display: block;
+  margin-bottom: 4px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.summary-card strong {
+  color: #1e293b;
+  font-size: 1.25rem;
+}
+
+.parents-footer {
+  padding: 20px;
+  color: #ffffff;
+  text-align: center;
+  background-color: #1e293b;
+}
+
+.parents-footer p {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .academic-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .grades-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .period-filter select {
+    width: 100%;
+  }
+}
+
+@media (max-width: 700px) {
+  .parents-content {
+    padding: 25px 15px;
+  }
+
+  .parents-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .student-card {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .student-status {
+    width: 100%;
+  }
+
+  .grades-section {
+    padding: 20px 15px;
+  }
+
+}

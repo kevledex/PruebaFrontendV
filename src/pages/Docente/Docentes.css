@@ -1,0 +1,504 @@
+/* ==========================================================
+   DOCENTES.CSS
+   ESTILOS GENERALES
+========================================================== */
+
+.students-page{
+    display:flex;
+    flex-direction:column;
+    gap:2rem;
+    padding:2rem;
+    animation:fadeIn .4s ease;
+}
+
+.students-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:1rem;
+}
+
+.students-label{
+    display:inline-block;
+    background:#eef4ff;
+    color:#2563eb;
+    padding:.35rem .8rem;
+    border-radius:999px;
+    font-size:.8rem;
+    font-weight:700;
+    margin-bottom:.8rem;
+}
+
+.students-header h1{
+    margin:0;
+    font-size:2rem;
+    color:#1e293b;
+}
+
+.students-header p{
+    margin-top:.6rem;
+    color:#64748b;
+    font-size:1rem;
+}
+
+/* ==========================================================
+   TARJETAS
+========================================================== */
+
+.students-form-card,
+.students-list-card{
+    background:#fff;
+    border-radius:18px;
+    padding:2rem;
+    box-shadow:0 10px 30px rgba(15,23,42,.08);
+}
+
+.students-card-title{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    margin-bottom:2rem;
+}
+
+.students-card-title span{
+    width:60px;
+    height:60px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#2563eb;
+    color:#fff;
+    font-size:1.5rem;
+}
+
+.students-card-title p{
+    margin:0;
+    color:#64748b;
+    font-size:.9rem;
+}
+
+.students-card-title h2{
+    margin-top:.25rem;
+    color:#1e293b;
+}
+
+/* ==========================================================
+   FORMULARIO
+========================================================== */
+
+.students-form-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:1.3rem;
+}
+
+.students-form-grid label{
+    display:flex;
+    flex-direction:column;
+    gap:.45rem;
+}
+
+.students-form-grid span{
+    font-size:.9rem;
+    font-weight:600;
+    color:#334155;
+}
+
+.students-form-grid input,
+.students-form-grid select{
+    width:100%;
+    padding:.85rem 1rem;
+    border:1px solid #dbe3ef;
+    border-radius:12px;
+    outline:none;
+    font-size:.95rem;
+    transition:.25s;
+    background:#fff;
+}
+
+.students-form-grid input:focus,
+.students-form-grid select:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+/* ==========================================================
+   BOTONES Y MENSAJES
+========================================================== */
+
+.students-form-actions{
+    margin-top:2rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:1rem;
+}
+
+.students-save-button{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:.6rem;
+    padding:.9rem 1.8rem;
+    border:none;
+    border-radius:12px;
+    background:#2563eb;
+    color:#fff;
+    font-size:.95rem;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.students-save-button:hover{
+    background:#1d4ed8;
+    transform:translateY(-2px);
+}
+
+.students-save-button:active{
+    transform:scale(.98);
+}
+
+.students-message{
+    color:#2563eb;
+    font-weight:600;
+}
+
+.students-message--error{
+    color:#dc2626;
+}
+
+/* ==========================================================
+   BUSCADOR
+========================================================== */
+
+.students-list-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:1rem;
+    margin-bottom:1.8rem;
+}
+
+.students-list-header h2{
+    margin-top:.3rem;
+    color:#1e293b;
+}
+
+.students-search{
+    position:relative;
+    width:320px;
+    max-width:100%;
+}
+
+.students-search i{
+    position:absolute;
+    left:15px;
+    top:50%;
+    transform:translateY(-50%);
+    color:#94a3b8;
+}
+
+.students-search input{
+    width:100%;
+    padding:.85rem 1rem .85rem 2.8rem;
+    border:1px solid #dbe3ef;
+    border-radius:12px;
+    outline:none;
+    transition:.25s;
+    font-size:.95rem;
+}
+
+.students-search input:focus{
+    border-color:#2563eb;
+    box-shadow:0 0 0 3px rgba(37,99,235,.15);
+}
+
+/* ==========================================================
+   CONTADOR
+========================================================== */
+
+.students-filters{
+    display:flex;
+    justify-content:flex-end;
+    align-items:center;
+    margin-bottom:1.5rem;
+    color:#64748b;
+    font-size:.95rem;
+}
+
+.students-filters strong{
+    color:#1e293b;
+}
+/* ==========================================================
+   TABLA
+========================================================== */
+
+.students-table-wrapper{
+    width:100%;
+    overflow-x:auto;
+}
+
+.students-table{
+    width:100%;
+    border-collapse:collapse;
+    min-width:900px;
+}
+
+.students-table thead{
+    background:#2563eb;
+    color:#fff;
+}
+
+.students-table th{
+    padding:1rem;
+    text-align:left;
+    font-weight:600;
+    font-size:.95rem;
+}
+
+.students-table td{
+    padding:1rem;
+    border-bottom:1px solid #e2e8f0;
+    vertical-align:middle;
+}
+
+.students-table tbody tr{
+    transition:.25s;
+}
+
+.students-table tbody tr:hover{
+    background:#f8fafc;
+}
+
+.students-person{
+    display:flex;
+    align-items:center;
+    gap:.8rem;
+}
+
+.students-person span{
+    width:42px;
+    height:42px;
+    border-radius:50%;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#2563eb;
+    color:#fff;
+    font-weight:bold;
+    font-size:1rem;
+}
+
+.students-person strong{
+    color:#1e293b;
+    font-size:.95rem;
+}
+
+/* ==========================================================
+   BOTONES DE ACCIÓN
+========================================================== */
+
+.students-actions{
+    display:flex;
+    gap:.5rem;
+}
+
+.students-action-button{
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#fff;
+    transition:.25s;
+}
+
+.students-action-button i{
+    font-size:1rem;
+}
+
+.students-action-button--edit{
+    background:#64748b;
+}
+
+.students-action-button--edit:hover{
+    background:#475569;
+    transform:translateY(-2px);
+}
+
+.students-action-button--delete{
+    background:#ef4444;
+}
+
+.students-action-button--delete:hover{
+    background:#dc2626;
+    transform:translateY(-2px);
+}
+
+/* ==========================================================
+   MENSAJE SIN REGISTROS
+========================================================== */
+
+.students-empty{
+    padding:3rem;
+    text-align:center;
+    color:#64748b;
+}
+
+.students-empty i{
+    font-size:3rem;
+    color:#cbd5e1;
+    margin-bottom:1rem;
+}
+
+.students-empty p{
+    margin:0;
+    font-size:1rem;
+}
+/* ==========================================================
+   PAGINACIÓN
+========================================================== */
+
+.students-pagination{
+    margin-top:2rem;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    flex-wrap:wrap;
+    gap:1rem;
+}
+
+.students-pagination button{
+    border:none;
+    background:#e2e8f0;
+    color:#1e293b;
+    padding:.75rem 1.2rem;
+    border-radius:10px;
+    cursor:pointer;
+    transition:.25s;
+    font-weight:600;
+}
+
+.students-pagination button:hover:not(:disabled){
+    background:#1d4ed8;
+    color:#fff;
+}
+
+.students-pagination button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+}
+
+.students-pagination div{
+    display:flex;
+    gap:.5rem;
+}
+
+.students-page-button--active{
+    background:#2563eb !important;
+    color:#fff !important;
+}
+
+/* ==========================================================
+   ANIMACIONES
+========================================================== */
+
+@keyframes fadeIn{
+
+    from{
+        opacity:0;
+        transform:translateY(15px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+/* ==========================================================
+   RESPONSIVE
+========================================================== */
+
+@media (max-width:992px){
+
+    .students-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .students-list-header{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .students-search{
+        width:100%;
+    }
+
+}
+
+@media (max-width:768px){
+
+    .students-page{
+        padding:1rem;
+    }
+
+    .students-form-card,
+    .students-list-card{
+        padding:1.25rem;
+    }
+
+    .students-form-grid{
+        grid-template-columns:1fr;
+    }
+
+    .students-form-actions{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .students-save-button{
+        width:100%;
+    }
+
+    .students-pagination{
+        flex-direction:column;
+    }
+
+    .students-pagination div{
+        flex-wrap:wrap;
+        justify-content:center;
+    }
+
+}
+
+@media (max-width:576px){
+
+    .students-header h1{
+        font-size:1.5rem;
+    }
+
+    .students-card-title{
+        flex-direction:column;
+        text-align:center;
+    }
+
+    .students-card-title span{
+        margin:auto;
+    }
+
+    .students-table{
+        min-width:700px;
+    }
+
+}
+.students-role-badge{display:inline-block;padding:.35rem .65rem;color:#1d4ed8;border-radius:999px;background:#dbeafe;font-size:.82rem;font-weight:700;white-space:nowrap}

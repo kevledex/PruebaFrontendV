@@ -1,0 +1,283 @@
+
+.mensajes-content {
+  width: 100%;
+  max-width: 1250px;
+  flex: 1;
+  margin: 0 auto;
+  padding: 35px 25px;
+}
+
+.mensajes-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 25px;
+}
+
+.mensajes-header p {
+  margin: 0 0 5px;
+  color: #2563eb;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.mensajes-header h1 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+/**Formualsrio*/
+
+.mensaje-formulario {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: 30px;
+  border-top: 5px solid #2563eb;
+  border-radius: 16px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 25px rgba(38, 50, 56, 0.08);
+}
+
+.mensaje-formulario label {
+  margin-bottom: 8px;
+  color: #1e293b;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.mensaje-formulario input,
+.mensaje-formulario select,
+.mensaje-formulario textarea {
+  width: 100%;
+  margin-bottom: 20px;
+  padding: 13px 15px;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 10px;
+  background-color: #f8fafc;
+  font-family: inherit;
+  font-size: 1rem;
+  box-sizing: border-box;
+  outline: none;
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.mensaje-formulario input:focus,
+.mensaje-formulario select:focus,
+.mensaje-formulario textarea:focus {
+  border-color: #2563eb;
+  background-color: #ffffff;
+  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+}
+
+.mensaje-formulario textarea {
+  min-height: 130px;
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.mensaje-formulario select {
+  cursor: pointer;
+}
+
+/* Botones del formulario */
+
+.mensaje-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 5px;
+}
+
+.mensaje-acciones button {
+  min-width: 140px;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.mensaje-acciones button:first-child {
+  color: #ffffff;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.22);
+}
+
+.mensaje-acciones button:first-child:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(37, 99, 235, 0.28);
+}
+
+.mensaje-acciones button:last-child {
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  background-color: #f1f5f9;
+}
+
+.mensaje-acciones button:last-child:hover {
+  background-color: #e2e8f0;
+  transform: translateY(-2px);
+}
+
+/* Lista de mensajes */
+
+.lista-mensajes {
+  width: 100%;
+  margin-top: 35px;
+}
+
+.lista-mensajes h2 {
+  margin-bottom: 20px;
+  color: #1e293b;
+  font-size: 1.5rem;
+  font-weight: 800;
+}
+
+.lista-mensajes > p {
+  padding: 28px;
+  color: #64748b;
+  text-align: center;
+  border: 1px dashed #cbd5e1;
+  border-radius: 14px;
+  background-color: #ffffff;
+  box-shadow: 0 6px 18px rgba(38, 50, 56, 0.06);
+}
+
+/* Tarjeta de cada mensaje */
+
+.mensaje-enviado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+  margin-bottom: 18px;
+  padding: 24px 26px;
+  border-left: 5px solid #2563eb;
+  border-radius: 14px;
+  background-color: #ffffff;
+  box-shadow: 0 8px 25px rgba(38, 50, 56, 0.08);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.mensaje-enviado:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(38, 50, 56, 0.13);
+}
+
+.mensaje-informacion {
+  flex: 1;
+}
+
+.mensaje-informacion p {
+  margin: 6px 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.mensaje-informacion strong {
+  color: #2563eb;
+  font-weight: 800;
+}
+
+/* Botón eliminar */
+
+.btn-eliminar {
+  min-width: 105px;
+  padding: 11px 17px;
+  color: #ffffff;
+  border: none;
+  border-radius: 9px;
+  background-color: #dc2626;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 5px 14px rgba(220, 38, 38, 0.2);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    background-color 0.2s ease;
+}
+
+.btn-eliminar:hover {
+  background-color: #b91c1c;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.28);
+}
+
+.btn-eliminar:active,
+.mensaje-acciones button:active {
+  transform: translateY(0);
+}
+
+/* Adaptación para tablets */
+
+@media (max-width: 800px) {
+  .mensajes-content {
+    padding: 28px 20px;
+  }
+
+  .mensaje-formulario {
+    padding: 25px;
+  }
+
+  .mensaje-enviado {
+    align-items: flex-start;
+  }
+}
+
+/* Adaptación para teléfonos */
+
+@media (max-width: 600px) {
+  .mensajes-content {
+    padding: 25px 15px;
+  }
+
+  .mensajes-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .mensajes-header h1 {
+    font-size: 1.7rem;
+  }
+
+  .mensaje-formulario {
+    padding: 22px 18px;
+  }
+
+  .mensaje-acciones {
+    flex-direction: column;
+  }
+
+  .mensaje-acciones button {
+    width: 100%;
+  }
+
+  .mensaje-enviado {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 20px;
+  }
+
+  .btn-eliminar {
+    width: 100%;
+  }
+}
+

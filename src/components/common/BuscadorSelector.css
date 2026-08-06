@@ -1,0 +1,146 @@
+.buscador-selector {
+  position: relative;
+  width: 100%;
+}
+
+.buscador-selector-campo {
+  width: 100%;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  padding: 0 13px;
+  color: #64748b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+}
+
+.buscador-selector-campo:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.buscador-selector-campo i {
+  font-size: 0.95rem;
+  color: #94a3b8;
+}
+
+.buscador-selector-campo input {
+  width: 100%;
+  min-height: 42px;
+  /* !important: las páginas que usan este componente suelen tener una
+     regla genérica ".xxx-grid input { border: 1px solid ... }" que
+     coincide con este <input> por tener la misma especificidad CSS que
+     esta clase, produciendo un doble borde (el del contenedor y el del
+     input) según el orden de carga. Este input debe quedar siempre sin
+     borde propio: el borde visible lo pone ".buscador-selector-campo". */
+  border: 0 !important;
+  outline: 0 !important;
+  box-shadow: none !important;
+  background: transparent;
+  color: #1e293b;
+  font-size: 0.92rem;
+}
+
+.buscador-selector-lista {
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  max-height: 240px;
+  overflow-y: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+}
+
+.buscador-selector-opcion {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 14px;
+  text-align: left;
+  border: 0;
+  border-bottom: 1px solid #f1f5f9;
+  background: #fff;
+  cursor: pointer;
+}
+
+.buscador-selector-opcion:last-child {
+  border-bottom: 0;
+}
+
+.buscador-selector-opcion:hover,
+.buscador-selector-opcion:focus {
+  background: #eff6ff;
+}
+
+.buscador-selector-opcion strong {
+  color: #1e293b;
+  font-size: 0.9rem;
+}
+
+.buscador-selector-opcion span {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.buscador-selector-vacio {
+  margin: 0;
+  padding: 14px;
+  color: #64748b;
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.buscador-selector-elegido {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 13px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #f8fafc;
+}
+
+.buscador-selector-elegido > div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.buscador-selector-elegido strong {
+  color: #1e293b;
+  font-size: 0.92rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.buscador-selector-elegido span {
+  color: #64748b;
+  font-size: 0.78rem;
+}
+
+.buscador-selector-elegido button {
+  min-height: 32px;
+  padding: 0 12px;
+  color: #2563eb;
+  border: 1px solid #93c5fd;
+  border-radius: 7px;
+  background: #eff6ff;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.buscador-selector-elegido button:hover {
+  background: #dbeafe;
+}

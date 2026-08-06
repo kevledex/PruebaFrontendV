@@ -1,0 +1,494 @@
+.students-page {
+  width: 100%;
+  max-width: 1250px;
+  margin: 0 auto;
+  padding: 35px 25px 55px;
+}
+
+.students-header,
+.students-list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 25px;
+}
+
+.students-header {
+  margin-bottom: 25px;
+}
+
+.students-label {
+  margin: 0 0 5px;
+  color: #2563eb;
+  font-size: 0.84rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.students-header h1 {
+  margin: 0 0 8px;
+  color: #1e293b;
+  font-size: 2rem;
+  font-weight: 800;
+}
+
+.students-header > div > p:last-child {
+  margin: 0;
+  color: #64748b;
+}
+
+.students-save-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 44px;
+  padding: 0 18px;
+  font-weight: 700;
+  border-radius: 9px;
+  transition: 0.2s ease;
+}
+
+.students-form-card,
+.students-list-card {
+  padding: 28px 30px;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px rgba(30, 41, 59, 0.08);
+}
+
+.students-form-card {
+  margin-bottom: 25px;
+  border-left: 5px solid #2563eb;
+}
+
+.students-course-summary {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 16px;
+  margin-bottom: 25px;
+}
+
+.students-course-card {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  min-height: 88px;
+  padding: 17px;
+  color: #1e293b;
+  text-align: left;
+  border: 1px solid #e2e8f0;
+  border-radius: 13px;
+  background: #fff;
+  box-shadow: 0 6px 18px rgba(30, 41, 59, 0.06);
+  transition: 0.2s ease;
+}
+
+.students-course-card:hover,
+.students-course-card--active {
+  border-color: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 9px 22px rgba(37, 99, 235, 0.15);
+}
+
+.students-course-card--active {
+  background: #eff6ff;
+}
+
+.students-course-card > span {
+  width: 45px;
+  height: 45px;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  color: #2563eb;
+  border-radius: 11px;
+  background: #dbeafe;
+  font-size: 1.25rem;
+}
+
+.students-course-card div {
+  display: flex;
+  flex-direction: column;
+}
+
+.students-course-card strong {
+  font-size: 0.94rem;
+}
+
+.students-course-card small {
+  margin-top: 3px;
+  color: #64748b;
+}
+
+.students-card-title {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 25px;
+}
+
+.students-card-title > span {
+  width: 50px;
+  height: 50px;
+  display: grid;
+  place-items: center;
+  color: #2563eb;
+  border-radius: 13px;
+  background: #dbeafe;
+  font-size: 1.45rem;
+}
+
+.students-card-title p {
+  margin: 0 0 2px;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.students-card-title h2,
+.students-list-header h2 {
+  margin: 0;
+  color: #1e293b;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.students-form-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 20px;
+}
+
+.students-form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.students-form-grid label > span {
+  color: #334155;
+  font-size: 0.86rem;
+  font-weight: 700;
+}
+
+.students-form-grid input,
+.students-form-grid select {
+  width: 100%;
+  min-height: 44px;
+  padding: 9px 12px;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  outline: none;
+}
+
+.students-form-grid input:focus,
+.students-form-grid select:focus,
+.students-search:focus-within {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.students-form-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.students-save-button {
+  color: #fff;
+  border: 0;
+  background: #2563eb;
+  box-shadow: 0 6px 16px rgba(37, 99, 235, 0.25);
+}
+
+.students-save-button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+
+.students-message {
+  margin: 0 auto 0 0;
+  color: #2563eb;
+  font-weight: 700;
+}
+
+.students-message--error {
+  color: #dc2626;
+}
+
+.students-list-header {
+  margin-bottom: 20px;
+}
+
+.students-filters {
+  display: flex;
+  align-items: flex-end;
+  gap: 16px;
+  padding: 16px;
+  margin-bottom: 20px;
+  border-radius: 11px;
+  background: #f1f5f9;
+}
+
+.students-filters label {
+  min-width: 185px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.students-filters label span {
+  color: #334155;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.students-filters select {
+  min-height: 40px;
+  padding: 8px 11px;
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  outline: none;
+}
+
+.students-filters select:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.students-filters p {
+  margin: 0 0 9px auto;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.students-search {
+  width: min(100%, 340px);
+  min-height: 43px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 14px;
+  color: #94a3b8;
+  border: 1px solid #cbd5e1;
+  border-radius: 9px;
+  background: #f8fafc;
+}
+
+.students-search input {
+  width: 100%;
+  border: 0;
+  outline: 0;
+  background: transparent;
+}
+
+.students-table-wrapper {
+  overflow-x: auto;
+}
+
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.students-table th,
+.students-table td {
+  padding: 14px 12px;
+  border-bottom: 1px solid #e2e8f0;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.students-table th {
+  color: #fff;
+  background: #2563eb;
+  font-size: 0.82rem;
+}
+
+.students-table th:first-child {
+  border-radius: 8px 0 0;
+}
+
+.students-table th:last-child {
+  border-radius: 0 8px 0 0;
+}
+
+.students-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.students-person {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.students-person > span {
+  width: 36px;
+  height: 36px;
+  display: grid;
+  place-items: center;
+  color: #2563eb;
+  border-radius: 50%;
+  background: #dbeafe;
+  font-weight: 800;
+}
+
+.students-person strong {
+  color: #1e293b;
+}
+
+.students-actions {
+  display: flex;
+  gap: 7px;
+}
+
+.students-action-button {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 8px;
+  transition: 0.18s ease;
+}
+
+.students-action-button--edit {
+  color: #334155;
+  background: #e2e8f0;
+}
+
+.students-action-button--edit:hover {
+  background: #cbd5e1;
+}
+
+.students-action-button--delete {
+  color: #dc2626;
+  background: #fee2e2;
+}
+
+.students-action-button--delete:hover {
+  background: #fecaca;
+}
+
+.students-empty {
+  padding: 40px 20px;
+  color: #64748b;
+  text-align: center;
+}
+
+.students-empty i {
+  font-size: 2rem;
+}
+
+.students-empty p {
+  margin: 8px 0 0;
+}
+
+.students-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding-top: 20px;
+}
+
+.students-pagination > div {
+  display: flex;
+  gap: 6px;
+}
+
+.students-pagination button {
+  min-width: 38px;
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 0 11px;
+  color: #475569;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  font-weight: 700;
+}
+
+.students-pagination button:hover:not(:disabled),
+.students-pagination .students-page-button--active {
+  color: #fff;
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+.students-pagination button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+@media (max-width: 1000px) {
+  .students-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .students-page {
+    padding: 25px 15px 40px;
+  }
+
+  .students-header,
+  .students-list-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .students-form-card,
+  .students-list-card {
+    padding: 22px 16px;
+  }
+
+  .students-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .students-search,
+  .students-save-button {
+    width: 100%;
+  }
+
+  .students-form-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .students-filters {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .students-filters label {
+    width: 100%;
+  }
+
+  .students-filters p {
+    margin: 0;
+  }
+
+  .students-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .students-pagination > div {
+    justify-content: center;
+  }
+}

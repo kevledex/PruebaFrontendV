@@ -1,0 +1,84 @@
+.feedback-backdrop {
+  position: fixed;
+  z-index: 2200;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(21, 35, 30, 0.58);
+  -webkit-backdrop-filter: blur(3px);
+  backdrop-filter: blur(3px);
+}
+
+.feedback-dialog {
+  width: min(100%, 430px);
+  padding: 34px 30px 30px;
+  text-align: center;
+  border: 1px solid #e2e8f0;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 25px 70px rgba(0, 0, 0, 0.24);
+  animation: feedback-dialog-in 0.2s ease-out;
+}
+
+@keyframes feedback-dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+}
+
+.feedback-icon {
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 17px;
+  color: #ffffff;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  box-shadow: 0 9px 22px rgba(37, 99, 235, 0.25);
+  font-size: 2rem;
+}
+
+.feedback-label {
+  margin: 0 0 5px;
+  color: #2563eb;
+  font-size: 0.76rem;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+}
+
+.feedback-dialog h2 {
+  margin: 0 0 10px;
+  color: #1e293b;
+  font-size: 1.4rem;
+  font-weight: 800;
+}
+
+.feedback-dialog > p:last-of-type {
+  margin: 0 auto 24px;
+  color: #64748b;
+  line-height: 1.55;
+}
+
+.feedback-dialog button {
+  width: 100%;
+  min-height: 44px;
+  color: #ffffff;
+  border: 0;
+  border-radius: 9px;
+  background: #2563eb;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.feedback-dialog button:hover {
+  background: #1d4ed8;
+}
+
+.feedback-dialog button:focus-visible {
+  outline: 3px solid rgba(37, 99, 235, 0.22);
+  outline-offset: 3px;
+}
