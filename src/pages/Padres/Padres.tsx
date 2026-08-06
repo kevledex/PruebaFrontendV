@@ -155,7 +155,7 @@ function Padres() {
             <div className="grades-header">
               <div>
                 <p className="section-label">Selección</p>
-                <h2>Curso, estudiante y periodo</h2>
+                <h2>Curso, estudiante y trimestre</h2>
               </div>
             </div>
 
@@ -190,7 +190,7 @@ function Padres() {
             </div>
 
             <div className="period-filter" style={{ marginTop: 14 }}>
-              <label htmlFor="periodo-padres">Periodo académico</label>
+              <label htmlFor="periodo-padres">Trimestre</label>
               <select
                 id="periodo-padres"
                 value={periodoId ?? ""}
@@ -198,7 +198,7 @@ function Padres() {
               >
                 {periodos.map((periodo) => (
                   <option key={periodo.id} value={periodo.id}>
-                    Periodo {periodo.numero}
+                    Trimestre {periodo.numero}
                     {periodo.cerrado ? " (cerrado)" : ""}
                   </option>
                 ))}
@@ -254,7 +254,7 @@ function Padres() {
                 <div className="grades-header">
                   <div>
                     <p className="section-label">Rendimiento académico</p>
-                    <h2>Calificaciones del periodo</h2>
+                    <h2>Calificaciones del trimestre</h2>
                   </div>
                 </div>
 
@@ -325,7 +325,7 @@ function Padres() {
                 )}
 
                 {!informe.materias.length && !informe.destrezas.length && (
-                  <p>Todavía no hay calificaciones registradas para este periodo.</p>
+                  <p>Todavía no hay calificaciones registradas para este trimestre.</p>
                 )}
               </Card>
 

@@ -112,6 +112,22 @@
   color: #64748b;
 }
 
+.btn-mostrar-contrasena {
+  cursor: pointer;
+  color: #64748b;
+  background-color: #fff;
+  transition: color 0.15s ease;
+}
+
+.btn-mostrar-contrasena:hover {
+  color: #2563eb;
+}
+
+.btn-mostrar-contrasena:focus-visible {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
 .login-button {
   padding: 12px;
   color: #ffffff;

@@ -20,6 +20,11 @@ export class ApiError extends Error {
 
 let csrfToken: string | null = null;
 let csrfHeader = "X-XSRF-TOKEN";
+// El backend corre con CSRF desactivado y devuelve un token vacío ("").
+// Usar la sola verdad de "csrfToken" para decidir si ya se pidió el token
+// no sirve porque "" es falsy: eso hacía que ensureCsrf() volviera a pedir
+// el token en CADA petición POST/PUT/DELETE (una GET extra por cada guardado).
+let csrfFetched = false;
 
 async function parseResponse<T>(response: Response): Promise<T> {
   if (response.status === 204) return undefined as T;
@@ -37,7 +42,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
 }
 
 async function ensureCsrf() {
-  if (csrfToken) return;
+  if (csrfFetched) return;
   const response = await fetch(`${API_URL}/auth/csrf`, {
     credentials: "include",
   });
@@ -46,6 +51,7 @@ async function ensureCsrf() {
   );
   csrfToken = data.token;
   csrfHeader = data.headerName;
+  csrfFetched = true;
 }
 
 async function request<T>(
@@ -69,6 +75,7 @@ async function request<T>(
 
   if (response.status === 403 && method !== "GET") {
     csrfToken = null;
+    csrfFetched = false;
   }
 
   return parseResponse<T>(response);
@@ -91,6 +98,7 @@ export const api = {
   delete: (path: string) => request<void>(path, { method: "DELETE" }),
   resetCsrf: () => {
     csrfToken = null;
+    csrfFetched = false;
   },
 };
 

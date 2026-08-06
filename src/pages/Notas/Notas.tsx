@@ -86,12 +86,55 @@ function equivalenciaDesdeNumero(valor: number, hayNotas: boolean): string {
   return tabla[redondeado] ?? "E-";
 }
 
+function claseNota(hayValor: boolean, aprobado: boolean): string {
+  if (!hayValor) return "badge-nota badge-nota-vacio";
+  return aprobado ? "badge-nota badge-nota-aprobado" : "badge-nota badge-nota-reprobado";
+}
+
+const NOMBRE_NIVEL: Record<Nivel, string> = {
+  INICIAL: "Inicial",
+  PREPARATORIA: "Preparatoria",
+  ELEMENTAL: "Elemental",
+  MEDIA: "Media",
+};
+
 const ESCALAS_DESTREZA: Array<{ valor: EvaluacionDestreza["escala"]; codigo: string }> = [
   { valor: "ALCANZADA", codigo: "A" },
   { valor: "EN_PROCESO", codigo: "EP" },
   { valor: "INICIADA", codigo: "I" },
   { valor: "NO_EVALUADA", codigo: "NE" },
 ];
+
+const ORDEN_ESCALA: EvaluacionDestreza["escala"][] = ["ALCANZADA", "EN_PROCESO", "INICIADA", "NO_EVALUADA"];
+
+const ETIQUETA_ESCALA: Record<EvaluacionDestreza["escala"], string> = {
+  ALCANZADA: "Alcanzada",
+  EN_PROCESO: "En proceso",
+  INICIADA: "Iniciada",
+  NO_EVALUADA: "No evaluada",
+};
+
+function resumenDestrezas(escalas: string[]) {
+  const conteo: Record<EvaluacionDestreza["escala"], number> = {
+    ALCANZADA: 0,
+    EN_PROCESO: 0,
+    INICIADA: 0,
+    NO_EVALUADA: 0,
+  };
+  let evaluadas = 0;
+  escalas.forEach((valor) => {
+    if (valor && valor in conteo) {
+      conteo[valor as EvaluacionDestreza["escala"]]++;
+      evaluadas++;
+    }
+  });
+  if (!evaluadas) return null;
+  let predominante = ORDEN_ESCALA[0];
+  ORDEN_ESCALA.forEach((escala) => {
+    if (conteo[escala] > conteo[predominante]) predominante = escala;
+  });
+  return { predominante, evaluadas, total: escalas.length };
+}
 
 const AMBITOS_SUGERIDOS = [
   "Identidad y Autonomía",
@@ -119,6 +162,18 @@ const ENUM_CATEGORIA: Record<CategoriaMedia, CategoriaInsumoMedia> = {
   individuales: "INDIVIDUAL",
   lecciones: "LECCION",
   grupales: "GRUPAL",
+};
+
+type CategoriaInsumo = "insumo1" | "insumo2";
+
+const CATEGORIAS_POR_INSUMO: Record<CategoriaInsumo, CategoriaMedia[]> = {
+  insumo1: ["tareas", "individuales", "lecciones"],
+  insumo2: ["grupales"],
+};
+
+const ETIQUETA_INSUMO: Record<CategoriaInsumo, string> = {
+  insumo1: "Insumo 1",
+  insumo2: "Insumo 2",
 };
 
 type EstudianteMedia = {
@@ -179,7 +234,7 @@ export default function Notas() {
   const [proyectoId, setProyectoId] = useState<number | null>(null);
   const [examenId, setExamenId] = useState<number | null>(null);
   const [estudiantesMedia, setEstudiantesMedia] = useState<EstudianteMedia[]>([]);
-  const [modalMediaAbierto, setModalMediaAbierto] = useState<CategoriaMedia | null>(null);
+  const [modalMediaAbierto, setModalMediaAbierto] = useState<CategoriaInsumo | null>(null);
   const respaldoMedia = useRef<{
     columnas: typeof columnasMediaVacias;
     ids: typeof idsColumnasMediaVacias;
@@ -203,8 +258,14 @@ export default function Notas() {
   const [estudiantesDestreza, setEstudiantesDestreza] = useState<EstudianteDestreza[]>([]);
 
   const [notaIdPorCelda, setNotaIdPorCelda] = useState<Map<string, number>>(new Map());
-  const [mensaje, setMensaje] = useState("");
+  const [mensaje, setMensajeTexto] = useState("");
+  const [mensajeTipo, setMensajeTipo] = useState<"error" | "exito">("error");
   const [guardando, setGuardando] = useState(false);
+
+  function setMensaje(texto: string, tipo: "error" | "exito" = "error") {
+    setMensajeTipo(tipo);
+    setMensajeTexto(texto);
+  }
 
   const cursoSeleccionado = cursos.find((c) => c.id === cursoId);
   const nivelActual = cursoSeleccionado?.nivel;
@@ -221,6 +282,10 @@ export default function Notas() {
       })
       .catch((error) => setMensaje(getApiErrorMessage(error)));
   }, []);
+
+  useEffect(() => {
+    setMensaje("");
+  }, [cursoId, materiaCursoId, periodoId]);
 
   useEffect(() => {
     if (!cursoId) return;
@@ -259,6 +324,12 @@ export default function Notas() {
 
   const estudiantesDelCurso = alumnosTodos
     .filter((al) => al.curso?.id === cursoId)
+    .slice()
+    .sort((a, b) => {
+      const apellidos = a.apellidos.trim().localeCompare(b.apellidos.trim(), "es", { sensitivity: "base" });
+      if (apellidos !== 0) return apellidos;
+      return a.nombres.trim().localeCompare(b.nombres.trim(), "es", { sensitivity: "base" });
+    })
     .map((al) => ({ id: al.id, nombre: `${al.nombres} ${al.apellidos}` }));
 
   // --- Carga: EGB Media / Elemental (actividades + notas) ---
@@ -272,8 +343,13 @@ export default function Notas() {
         );
 
         const mapaNotas = new Map<string, Nota>();
-        notas.forEach((n) => mapaNotas.set(`${n.alumno?.id}:${n.actividad?.id}`, n));
-        setNotaIdPorCelda(mapaNotas);
+        const mapaIdsNotas = new Map<string, number>();
+        notas.forEach((n) => {
+          const clave = `${n.alumno?.id}:${n.actividad?.id}`;
+          mapaNotas.set(clave, n);
+          mapaIdsNotas.set(clave, n.id);
+        });
+        setNotaIdPorCelda(mapaIdsNotas);
 
         const valor = (alumnoId: number, actividadId: number | null) => {
           if (!actividadId) return "";
@@ -396,14 +472,14 @@ export default function Notas() {
   }, [cargarDestrezas]);
 
   // ---------- Modal EGB Media ----------
-  function abrirModalMedia(categoria: CategoriaMedia) {
+  function abrirModalMedia(insumo: CategoriaInsumo) {
     respaldoMedia.current = {
       columnas: { ...columnasMedia },
       ids: { ...idsColumnasMedia },
       estudiantes: structuredClone(estudiantesMedia),
     };
     setMensaje("");
-    setModalMediaAbierto(categoria);
+    setModalMediaAbierto(insumo);
   }
 
   function cerrarModalMedia() {
@@ -467,12 +543,19 @@ export default function Notas() {
     const p2 = truncar2(proyecto * 0.15);
     const p3 = truncar2(examen * 0.15);
     const notaFinal = truncar2(p1 + p2 + p3);
-    return { insumo1, insumo2, formativaTotal, p1, p2, p3, notaFinal };
+    const hayDatos =
+      valoresNumericos(est.tareas).length > 0 ||
+      valoresNumericos(est.individuales).length > 0 ||
+      valoresNumericos(est.lecciones).length > 0 ||
+      valoresNumericos(est.grupales).length > 0 ||
+      est.proyecto.trim() !== "" ||
+      est.examen.trim() !== "";
+    return { insumo1, insumo2, formativaTotal, p1, p2, p3, notaFinal, hayDatos };
   }
 
   async function guardarMedia(): Promise<boolean> {
     if (!materiaCursoId || !periodoId) {
-      setMensaje("Selecciona materia y periodo académico.");
+      setMensaje("Selecciona materia y trimestre.");
       return false;
     }
     setGuardando(true);
@@ -552,7 +635,7 @@ export default function Notas() {
         setExamenId(idExamen);
       }
 
-      setMensaje("Notas guardadas correctamente.");
+      setMensaje("Notas guardadas correctamente.", "exito");
       cargarActividadesYNotas();
       return true;
     } catch (error) {
@@ -632,7 +715,7 @@ export default function Notas() {
 
   async function guardarElemental(): Promise<boolean> {
     if (!materiaCursoId || !periodoId) {
-      setMensaje("Selecciona materia y periodo académico.");
+      setMensaje("Selecciona materia y trimestre.");
       return false;
     }
     setGuardando(true);
@@ -660,7 +743,7 @@ export default function Notas() {
         }
       }
       setIdsColumnasElemental(nuevosIds);
-      setMensaje("Notas guardadas correctamente.");
+      setMensaje("Notas guardadas correctamente.", "exito");
       cargarActividadesYNotas();
       return true;
     } catch (error) {
@@ -688,6 +771,17 @@ export default function Notas() {
   function eliminarColumnaDestreza(indice: number) {
     setColumnasDestreza((prev) => prev.filter((_, i) => i !== indice));
     setEstudiantesDestreza((prev) => prev.map((est) => ({ ...est, escalas: est.escalas.filter((_, i) => i !== indice) })));
+    setIdsColumnasDestreza((prev) =>
+      prev.map((mapaFila) => {
+        const nuevoMapa: Record<number, number> = {};
+        Object.entries(mapaFila).forEach(([clave, id]) => {
+          const columna = Number(clave);
+          if (columna === indice) return;
+          nuevoMapa[columna > indice ? columna - 1 : columna] = id;
+        });
+        return nuevoMapa;
+      }),
+    );
   }
 
   function cambiarColumnaDestreza(indice: number, campo: "ambito" | "destreza", valor: string) {
@@ -702,7 +796,7 @@ export default function Notas() {
 
   async function guardarDestrezas() {
     if (!periodoId) {
-      setMensaje("Selecciona el periodo académico.");
+      setMensaje("Selecciona el trimestre.");
       return;
     }
     if (columnasDestreza.some((col) => !col.ambito.trim() || !col.destreza.trim())) {
@@ -733,7 +827,7 @@ export default function Notas() {
           }
         }
       }
-      setMensaje("Destrezas guardadas correctamente.");
+      setMensaje("Destrezas guardadas correctamente.", "exito");
       cargarDestrezas();
     } catch (error) {
       setMensaje(getApiErrorMessage(error));
@@ -749,11 +843,17 @@ export default function Notas() {
           <div>
             <p>Gestión académica</p>
             <h1>Ingreso de Notas</h1>
+            {cursoSeleccionado && nivelActual && (
+              <span className="chip-nivel">
+                {cursoSeleccionado.grado} "{cursoSeleccionado.paralelo}" · {NOMBRE_NIVEL[nivelActual]}
+              </span>
+            )}
           </div>
           <BackHomeButton />
         </section>
 
         <Card as="section" className="filtros-section">
+          <p className="filtros-titulo">Filtros</p>
           <div className="filtros">
             <div className="grupo">
               <label htmlFor="filtro-curso">Curso</label>
@@ -781,11 +881,11 @@ export default function Notas() {
             )}
 
             <div className="grupo">
-              <label htmlFor="filtro-periodo">Periodo académico</label>
+              <label htmlFor="filtro-periodo">Trimestre</label>
               <select id="filtro-periodo" value={periodoId ?? ""} onChange={(e) => setPeriodoId(Number(e.target.value))}>
                 {periodos.map((periodo) => (
                   <option key={periodo.id} value={periodo.id}>
-                    Periodo {periodo.numero}
+                    Trimestre {periodo.numero}
                     {periodo.cerrado ? " (cerrado)" : ""}
                   </option>
                 ))}
@@ -795,18 +895,32 @@ export default function Notas() {
         </Card>
 
         {mensaje && !modalMediaAbierto && !modalElementalAbierto && (
-          <div className="mensaje-error">{mensaje}</div>
+          <div className={mensajeTipo === "exito" ? "mensaje-exito" : "mensaje-error"}>{mensaje}</div>
         )}
 
         {esDestrezas && (
           <Card as="section" className="tabla-section">
-            <p style={{ margin: "0 0 16px" }}>
-              Este nivel se evalúa de forma 100% cualitativa, por destrezas y ámbitos de aprendizaje (sin notas numéricas ni promedios).
+            <div className="tabla-section-header">
+              <div className="tabla-section-titulo">
+                <span className="icono-nivel">
+                  <i className="bi bi-clipboard2-check"></i>
+                </span>
+                <div>
+                  <h2>Evaluación por destrezas</h2>
+                  <p>Ámbitos de aprendizaje — Inicial y Preparatoria</p>
+                </div>
+              </div>
+              <span className="chip-info">100% cualitativo</span>
+            </div>
+
+            <p className="leyenda-escalas">
+              <strong>A</strong> Alcanzada · <strong>EP</strong> En proceso · <strong>I</strong> Iniciada ·{" "}
+              <strong>NE</strong> No evaluada
             </p>
 
             <div className="acciones-header" style={{ marginBottom: 16 }}>
               <button className="btn-agregar-columna" onClick={agregarColumnaDestreza}>
-                + Añadir destreza
+                <i className="bi bi-plus-lg"></i> Añadir destreza
               </button>
             </div>
 
@@ -817,58 +931,84 @@ export default function Notas() {
                     <th>#</th>
                     <th>Estudiante</th>
                     {columnasDestreza.map((columna, indice) => (
-                      <th key={indice}>
+                      <th key={indice} className="columna-actividad columna-destreza">
+                        <button
+                          type="button"
+                          className="btn-quitar-columna"
+                          onClick={() => eliminarColumnaDestreza(indice)}
+                          aria-label="Eliminar destreza"
+                        >
+                          ✕
+                        </button>
                         <input
-                          className="input-nombre-actividad"
+                          className="input-ambito"
                           type="text"
                           list="ambitos-sugeridos"
-                          placeholder="Ámbito"
+                          placeholder="Ámbito de aprendizaje"
                           value={columna.ambito}
                           onChange={(e) => cambiarColumnaDestreza(indice, "ambito", e.target.value)}
                         />
                         <input
                           className="input-nombre-actividad"
                           type="text"
-                          placeholder="Destreza"
-                          style={{ marginTop: 6 }}
+                          placeholder="Nombre de la destreza"
                           value={columna.destreza}
                           onChange={(e) => cambiarColumnaDestreza(indice, "destreza", e.target.value)}
                         />
-                        <button className="btn-eliminar-columna" onClick={() => eliminarColumnaDestreza(indice)}>
-                          <img src="/assets/menos.png" alt="Eliminar" width={25} height={25} />
-                        </button>
                       </th>
                     ))}
+                    <th>Promedio</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {estudiantesDestreza.map((est, fila) => (
-                    <tr key={est.id}>
-                      <td>{est.id}</td>
-                      <td>{est.nombre}</td>
-                      {columnasDestreza.map((_, columna) => (
-                        <td key={columna}>
-                          <select
-                            id={idCelda("destreza", columna, fila)}
-                            value={est.escalas[columna]}
-                            onChange={(e) => cambiarEscala(est.id, columna, e.target.value)}
-                            onKeyDown={(e) => manejarEnter(e, idCelda("destreza", columna, fila + 1))}
-                          >
-                            <option value="">—</option>
-                            {ESCALAS_DESTREZA.map((escala) => (
-                              <option key={escala.valor} value={escala.valor}>
-                                {escala.codigo}
-                              </option>
-                            ))}
-                          </select>
+                  {estudiantesDestreza.map((est, fila) => {
+                    const resumen = resumenDestrezas(est.escalas);
+                    return (
+                      <tr key={est.id}>
+                        <td>{fila + 1}</td>
+                        <td>{est.nombre}</td>
+                        {columnasDestreza.map((_, columna) => (
+                          <td key={columna}>
+                            <select
+                              id={idCelda("destreza", columna, fila)}
+                              className="select-escala"
+                              value={est.escalas[columna]}
+                              onChange={(e) => cambiarEscala(est.id, columna, e.target.value)}
+                              onKeyDown={(e) => manejarEnter(e, idCelda("destreza", columna, fila + 1))}
+                            >
+                              <option value="">—</option>
+                              {ESCALAS_DESTREZA.map((escala) => (
+                                <option key={escala.valor} value={escala.valor}>
+                                  {escala.codigo}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                        ))}
+                        <td>
+                          {resumen ? (
+                            <div className="celda-resumen">
+                              <span className={`badge-escala badge-escala-${resumen.predominante.toLowerCase().replace("_", "-")}`}>
+                                {ETIQUETA_ESCALA[resumen.predominante]}
+                              </span>
+                              <small>
+                                {resumen.evaluadas}/{resumen.total} evaluadas
+                              </small>
+                            </div>
+                          ) : (
+                            <span className="badge-escala badge-escala-vacio">Sin evaluar</span>
+                          )}
                         </td>
-                      ))}
-                    </tr>
-                  ))}
+                      </tr>
+                    );
+                  })}
                   {!estudiantesDestreza.length && (
                     <tr>
-                      <td colSpan={2 + columnasDestreza.length} style={{ textAlign: "center", padding: 24 }}>
-                        No hay estudiantes matriculados en este curso todavía.
+                      <td colSpan={3 + columnasDestreza.length}>
+                        <div className="estado-vacio">
+                          <i className="bi bi-people"></i>
+                          <p>No hay estudiantes matriculados en este curso todavía.</p>
+                        </div>
                       </td>
                     </tr>
                   )}
@@ -892,9 +1032,18 @@ export default function Notas() {
         {esElemental && (
           <>
             <Card as="section" className="tabla-section">
-              <div className="acciones-header" style={{ marginBottom: 16 }}>
+              <div className="tabla-section-header">
+                <div className="tabla-section-titulo">
+                  <span className="icono-nivel">
+                    <i className="bi bi-journal-bookmark-fill"></i>
+                  </span>
+                  <div>
+                    <h2>Actividades y promedio</h2>
+                    <p>Educación General Básica — Elemental</p>
+                  </div>
+                </div>
                 <button className="btn-columna" onClick={abrirModalElemental} disabled={!materiaCursoId || !periodoId}>
-                  Actividades
+                  <i className="bi bi-pencil-square"></i> Actividades
                 </button>
               </div>
 
@@ -909,22 +1058,28 @@ export default function Notas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {estudiantesElemental.map((est) => {
+                    {estudiantesElemental.map((est, fila) => {
                       const numeros = valoresNumericos(est.notas);
                       const promedio = promedioTruncado(numeros);
+                      const hayNotas = numeros.length > 0;
                       return (
                         <tr key={est.id}>
-                          <td>{est.id}</td>
+                          <td>{fila + 1}</td>
                           <td>{est.nombre}</td>
-                          <td className="nota-final">{promedio.toFixed(2)}</td>
-                          <td>{equivalenciaDesdeNumero(promedio, numeros.length > 0)}</td>
+                          <td>
+                            <span className={claseNota(hayNotas, promedio >= 7)}>{promedio.toFixed(2)}</span>
+                          </td>
+                          <td>{equivalenciaDesdeNumero(promedio, hayNotas)}</td>
                         </tr>
                       );
                     })}
                     {!estudiantesElemental.length && (
                       <tr>
-                        <td colSpan={4} style={{ textAlign: "center", padding: 24 }}>
-                          No hay estudiantes matriculados en este curso todavía.
+                        <td colSpan={4}>
+                          <div className="estado-vacio">
+                            <i className="bi bi-people"></i>
+                            <p>No hay estudiantes matriculados en este curso todavía.</p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -943,10 +1098,12 @@ export default function Notas() {
                   onMouseDown={(event) => event.stopPropagation()}
                 >
                   <div className="modal-header">
-                    <h2>Actividades</h2>
+                    <h2>
+                      <i className="bi bi-journal-bookmark-fill"></i> Actividades
+                    </h2>
                     <div className="acciones-header">
                       <button className="btn-agregar-columna" onClick={agregarColumnaElemental}>
-                        + Añadir actividad
+                        <i className="bi bi-plus-lg"></i> Añadir actividad
                       </button>
                       <button className="btn-cerrar" onClick={cerrarModalElemental}>
                         ✕
@@ -960,16 +1117,21 @@ export default function Notas() {
                         <th>#</th>
                         <th>Estudiante</th>
                         {columnasElemental.map((nombre, indice) => (
-                          <th key={indice}>
+                          <th key={indice} className="columna-actividad">
+                            <button
+                              type="button"
+                              className="btn-quitar-columna"
+                              onClick={() => eliminarColumnaElemental(indice)}
+                              aria-label="Eliminar actividad"
+                            >
+                              ✕
+                            </button>
                             <input
                               className="input-nombre-actividad"
                               type="text"
                               value={nombre}
                               onChange={(e) => renombrarColumnaElemental(indice, e.target.value)}
                             />
-                            <button className="btn-eliminar-columna" onClick={() => eliminarColumnaElemental(indice)}>
-                              <img src="/assets/menos.png" alt="Eliminar" width={25} height={25} />
-                            </button>
                           </th>
                         ))}
                       </tr>
@@ -977,7 +1139,7 @@ export default function Notas() {
                     <tbody>
                       {estudiantesElemental.map((est, fila) => (
                         <tr key={est.id}>
-                          <td>{est.id}</td>
+                          <td>{fila + 1}</td>
                           <td>{est.nombre}</td>
                           {est.notas.map((valor, columna) => (
                             <td key={columna}>
@@ -999,7 +1161,9 @@ export default function Notas() {
                     </tbody>
                   </table>
 
-                  {mensaje && <div className="mensaje-error">{mensaje}</div>}
+                  {mensaje && (
+                    <div className={mensajeTipo === "exito" ? "mensaje-exito" : "mensaje-error"}>{mensaje}</div>
+                  )}
 
                   <div className="modal-footer">
                     <button className="btn-cancelar" onClick={cerrarModalElemental}>
@@ -1018,17 +1182,16 @@ export default function Notas() {
         {esMedia && (
           <>
             <Card as="section" className="tabla-section">
-              <div className="acciones-header" style={{ marginBottom: 16, flexWrap: "wrap", gap: 10 }}>
-                {CATEGORIAS_MEDIA.map((categoria) => (
-                  <button
-                    key={categoria}
-                    className="btn-columna"
-                    onClick={() => abrirModalMedia(categoria)}
-                    disabled={!materiaCursoId || !periodoId}
-                  >
-                    {ETIQUETA_CATEGORIA[categoria]}
-                  </button>
-                ))}
+              <div className="tabla-section-header">
+                <div className="tabla-section-titulo">
+                  <span className="icono-nivel">
+                    <i className="bi bi-bar-chart-fill"></i>
+                  </span>
+                  <div>
+                    <h2>Insumos y nota final</h2>
+                    <p>Educación General Básica Media / Bachillerato</p>
+                  </div>
+                </div>
               </div>
 
               <div className="tabla-container">
@@ -1037,8 +1200,26 @@ export default function Notas() {
                     <tr>
                       <th>#</th>
                       <th>Estudiante</th>
-                      <th>Insumo 1</th>
-                      <th>Insumo 2</th>
+                      <th>
+                        <button
+                          type="button"
+                          className="btn-insumo-header"
+                          onClick={() => abrirModalMedia("insumo1")}
+                          disabled={!materiaCursoId || !periodoId}
+                        >
+                          Insumo 1
+                        </button>
+                      </th>
+                      <th>
+                        <button
+                          type="button"
+                          className="btn-insumo-header"
+                          onClick={() => abrirModalMedia("insumo2")}
+                          disabled={!materiaCursoId || !periodoId}
+                        >
+                          Insumo 2
+                        </button>
+                      </th>
                       <th>Proyecto</th>
                       <th>Examen</th>
                       <th>Formativa (70%)</th>
@@ -1048,14 +1229,14 @@ export default function Notas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {estudiantesMedia.map((est) => {
+                    {estudiantesMedia.map((est, fila) => {
                       const d = calcularDesglose(est);
                       return (
                         <tr key={est.id}>
-                          <td>{est.id}</td>
+                          <td>{fila + 1}</td>
                           <td>{est.nombre}</td>
-                          <td>{d.insumo1.toFixed(2)}</td>
-                          <td>{d.insumo2.toFixed(2)}</td>
+                          <td className="celda-insumo">{d.insumo1.toFixed(2)}</td>
+                          <td className="celda-insumo">{d.insumo2.toFixed(2)}</td>
                           <td>
                             <input
                               type="number"
@@ -1081,14 +1262,19 @@ export default function Notas() {
                           <td>{d.p1.toFixed(2)}</td>
                           <td>{d.p2.toFixed(2)}</td>
                           <td>{d.p3.toFixed(2)}</td>
-                          <td className="nota-final">{d.notaFinal.toFixed(2)}</td>
+                          <td>
+                            <span className={claseNota(d.hayDatos, d.notaFinal >= 7)}>{d.notaFinal.toFixed(2)}</span>
+                          </td>
                         </tr>
                       );
                     })}
                     {!estudiantesMedia.length && (
                       <tr>
-                        <td colSpan={10} style={{ textAlign: "center", padding: 24 }}>
-                          No hay estudiantes matriculados en este curso todavía.
+                        <td colSpan={10}>
+                          <div className="estado-vacio">
+                            <i className="bi bi-people"></i>
+                            <p>No hay estudiantes matriculados en este curso todavía.</p>
+                          </div>
                         </td>
                       </tr>
                     )}
@@ -1109,74 +1295,91 @@ export default function Notas() {
                   className="modal-grande"
                   role="dialog"
                   aria-modal="true"
-                  aria-label={`Registro de ${ETIQUETA_CATEGORIA[modalMediaAbierto]}`}
+                  aria-label={`Registro de ${ETIQUETA_INSUMO[modalMediaAbierto]}`}
                   onMouseDown={(event) => event.stopPropagation()}
                 >
                   <div className="modal-header">
-                    <h2>{ETIQUETA_CATEGORIA[modalMediaAbierto]}</h2>
+                    <h2>{ETIQUETA_INSUMO[modalMediaAbierto]}</h2>
                     <div className="acciones-header">
-                      <button className="btn-agregar-columna" onClick={() => agregarColumnaMedia(modalMediaAbierto)}>
-                        + Añadir actividad
-                      </button>
                       <button className="btn-cerrar" onClick={cerrarModalMedia}>
                         ✕
                       </button>
                     </div>
                   </div>
 
-                  <table className="tabla-modal">
-                    <thead>
-                      <tr>
-                        <th>#</th>
-                        <th>Estudiante</th>
-                        {columnasMedia[modalMediaAbierto].map((nombre, indice) => (
-                          <th key={indice}>
-                            <input
-                              className="input-nombre-actividad"
-                              type="text"
-                              value={nombre}
-                              onChange={(e) => renombrarColumnaMedia(modalMediaAbierto!, indice, e.target.value)}
-                            />
-                            <button className="btn-eliminar-columna" onClick={() => eliminarColumnaMedia(modalMediaAbierto!, indice)}>
-                              <img src="/assets/menos.png" alt="Eliminar" width={25} height={25} />
-                            </button>
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {estudiantesMedia.map((est, fila) => (
-                        <tr key={est.id}>
-                          <td>{est.id}</td>
-                          <td>{est.nombre}</td>
-                          {est[modalMediaAbierto].map((valor, columna) => (
-                            <td key={columna}>
-                              <input
-                                id={idCelda(modalMediaAbierto!, columna, fila)}
-                                type="number"
-                                min="0"
-                                max="10"
-                                step="0.01"
-                                className="input-nota"
-                                value={valor}
-                                onChange={(e) => cambiarCeldaMedia(modalMediaAbierto!, est.id, columna, e.target.value)}
-                                onKeyDown={(e) => manejarEnter(e, idCelda(modalMediaAbierto!, columna, fila + 1))}
-                              />
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
+                  {CATEGORIAS_POR_INSUMO[modalMediaAbierto].map((categoria) => (
+                    <div key={categoria} className="subseccion-insumo">
+                      <div className="subseccion-insumo-titulo">
+                        <h3>{ETIQUETA_CATEGORIA[categoria]}</h3>
+                        <button className="btn-agregar-columna" onClick={() => agregarColumnaMedia(categoria)}>
+                          <i className="bi bi-plus-lg"></i> Añadir {ETIQUETA_CATEGORIA[categoria].toLowerCase()}
+                        </button>
+                      </div>
 
-                  {mensaje && <div className="mensaje-error">{mensaje}</div>}
+                      <div className="tabla-container">
+                        <table className="tabla-modal">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th>Estudiante</th>
+                              {columnasMedia[categoria].map((nombre, indice) => (
+                                <th key={indice} className="columna-actividad">
+                                  <button
+                                    type="button"
+                                    className="btn-quitar-columna"
+                                    onClick={() => eliminarColumnaMedia(categoria, indice)}
+                                    aria-label="Eliminar actividad"
+                                  >
+                                    ✕
+                                  </button>
+                                  <input
+                                    className="input-nombre-actividad"
+                                    type="text"
+                                    value={nombre}
+                                    onChange={(e) => renombrarColumnaMedia(categoria, indice, e.target.value)}
+                                  />
+                                </th>
+                              ))}
+                            </tr>
+                          </thead>
+                        <tbody>
+                          {estudiantesMedia.map((est, fila) => (
+                            <tr key={est.id}>
+                              <td>{fila + 1}</td>
+                              <td>{est.nombre}</td>
+                              {est[categoria].map((valor, columna) => (
+                                <td key={columna}>
+                                  <input
+                                    id={idCelda(categoria, columna, fila)}
+                                    type="number"
+                                    min="0"
+                                    max="10"
+                                    step="0.01"
+                                    className="input-nota"
+                                    value={valor}
+                                    onChange={(e) => cambiarCeldaMedia(categoria, est.id, columna, e.target.value)}
+                                    onKeyDown={(e) => manejarEnter(e, idCelda(categoria, columna, fila + 1))}
+                                  />
+                                </td>
+                              ))}
+                            </tr>
+                          ))}
+                        </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  ))}
+
+                  {mensaje && (
+                    <div className={mensajeTipo === "exito" ? "mensaje-exito" : "mensaje-error"}>{mensaje}</div>
+                  )}
 
                   <div className="modal-footer">
                     <button className="btn-cancelar" onClick={cerrarModalMedia}>
                       Cancelar
                     </button>
                     <button className="btn-guardar" onClick={guardarYcerrarModalMedia} disabled={guardando}>
-                      {guardando ? "Guardando..." : `Guardar ${ETIQUETA_CATEGORIA[modalMediaAbierto]}`}
+                      {guardando ? "Guardando..." : `Guardar ${ETIQUETA_INSUMO[modalMediaAbierto]}`}
                     </button>
                   </div>
                 </div>
@@ -1187,7 +1390,10 @@ export default function Notas() {
 
         {!esDestrezas && !esElemental && !esMedia && cursoSeleccionado && (
           <Card as="section" className="tabla-section">
-            <p>Selecciona un curso, materia y periodo académico para comenzar.</p>
+            <div className="estado-vacio">
+              <i className="bi bi-mortarboard"></i>
+              <p>Selecciona un curso, materia y trimestre para comenzar.</p>
+            </div>
           </Card>
         )}
 

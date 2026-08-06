@@ -9,6 +9,7 @@ function Login() {
   const [usuario, setUsuario] = useState("");
   const [contrasena, setContrasena] = useState("");
   const [error, setError] = useState("");
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
 
   async function iniciarSesion(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -97,12 +98,22 @@ function Login() {
 
                 <input
                   id="contrasena"
-                  type="password"
+                  type={mostrarContrasena ? "text" : "password"}
                   className="form-control"
                   placeholder="Ingrese su contraseña"
                   value={contrasena}
                   onChange={(event) => setContrasena(event.target.value)}
                 />
+
+                <button
+                  type="button"
+                  className="input-group-text btn-mostrar-contrasena"
+                  onClick={() => setMostrarContrasena((valor) => !valor)}
+                  aria-label={mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  aria-pressed={mostrarContrasena}
+                >
+                  <i className={mostrarContrasena ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                </button>
               </div>
             </div>
 

@@ -411,7 +411,7 @@ function Cursos() {
               </label>
 
               <label>
-                <span>Organización del periodo académico</span>
+                <span>Organización académica del curso</span>
                 <select
                   required
                   value={formularioCurso.tipoOrganizacion}
