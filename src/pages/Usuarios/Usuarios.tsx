@@ -14,12 +14,14 @@ type Rol = {
 type Usuario = {
   id: number;
   usuario: string;
+  cedula: string | null;
   estado: "Activo" | "Inactivo";
   rol: Rol;
 };
 
 const formularioInicial = {
   usuario: "",
+  cedula: "",
   password: "",
   rolId: "",
   estado: "Activo" as "Activo" | "Inactivo",
@@ -30,6 +32,8 @@ export default function Usuarios() {
   const [roles, setRoles] = useState<Rol[]>([]);
   const [formulario, setFormulario] = useState(formularioInicial);
   const [editandoId, setEditandoId] = useState<number | null>(null);
+  const [passwordTocada, setPasswordTocada] = useState(false);
+  const [mostrarContrasena, setMostrarContrasena] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [mensaje, setMensaje] = useState("");
   const [error, setError] = useState("");
@@ -68,6 +72,7 @@ export default function Usuarios() {
 
     const payload = {
       usuario: formulario.usuario.trim(),
+      cedula: formulario.cedula.trim(),
       password: formulario.password,
       estado: formulario.estado,
       rol: { id: Number(formulario.rolId) },
@@ -98,10 +103,12 @@ export default function Usuarios() {
     setEditandoId(item.id);
     setFormulario({
       usuario: item.usuario,
+      cedula: item.cedula ?? "",
       password: "",
       rolId: String(item.rol.id),
       estado: item.estado,
     });
+    setPasswordTocada(false);
     setMensaje("");
     setError("");
   }
@@ -109,6 +116,16 @@ export default function Usuarios() {
   function cancelarEdicion() {
     setEditandoId(null);
     setFormulario(formularioInicial);
+    setPasswordTocada(false);
+  }
+
+  function actualizarCedula(valor: string) {
+    const cedula = valor.replace(/\D/g, "").slice(0, 10);
+    setFormulario((actual) => ({
+      ...actual,
+      cedula,
+      password: !editandoId && !passwordTocada ? `Rpv${cedula}` : actual.password,
+    }));
   }
 
   async function eliminarUsuario(item: Usuario) {
@@ -152,23 +169,50 @@ export default function Usuarios() {
               />
             </label>
             <label>
+              <span>Cédula</span>
+              <input
+                required
+                inputMode="numeric"
+                maxLength={10}
+                pattern="[0-9]{10}"
+                placeholder="10 dígitos"
+                value={formulario.cedula}
+                onChange={(e) => actualizarCedula(e.target.value)}
+              />
+            </label>
+            <label>
               <span>
                 {editandoId
                   ? "Nueva contraseña (opcional)"
                   : "Contraseña temporal"}
               </span>
-              <input
-                required={!editandoId}
-                type="password"
-                minLength={8}
-                value={formulario.password}
-                onChange={(e) =>
-                  setFormulario((actual) => ({
-                    ...actual,
-                    password: e.target.value,
-                  }))
-                }
-              />
+              <div className="users-password-field">
+                <input
+                  required={!editandoId}
+                  type={mostrarContrasena ? "text" : "password"}
+                  minLength={8}
+                  value={formulario.password}
+                  onChange={(e) => {
+                    setPasswordTocada(true);
+                    setFormulario((actual) => ({
+                      ...actual,
+                      password: e.target.value,
+                    }));
+                  }}
+                />
+                <button
+                  type="button"
+                  className="users-toggle-password"
+                  onClick={() => setMostrarContrasena((valor) => !valor)}
+                  aria-label={mostrarContrasena ? "Ocultar contraseña" : "Mostrar contraseña"}
+                  aria-pressed={mostrarContrasena}
+                >
+                  <i className={mostrarContrasena ? "bi bi-eye-slash" : "bi bi-eye"}></i>
+                </button>
+              </div>
+              {!editandoId && (
+                <small>Se autocompleta como "Rpv" + cédula; puedes cambiarla.</small>
+              )}
             </label>
             <label>
               <span>Rol</span>
@@ -236,6 +280,7 @@ export default function Usuarios() {
               <thead>
                 <tr>
                   <th>Usuario</th>
+                  <th>Cédula</th>
                   <th>Rol</th>
                   <th>Estado</th>
                   <th>Acciones</th>
@@ -245,6 +290,7 @@ export default function Usuarios() {
                 {usuariosFiltrados.map((item) => (
                   <tr key={item.id}>
                     <td><strong>{item.usuario}</strong></td>
+                    <td>{item.cedula ?? "—"}</td>
                     <td><span className="users-role">{item.rol?.nombre}</span></td>
                     <td>{item.estado}</td>
                     <td>

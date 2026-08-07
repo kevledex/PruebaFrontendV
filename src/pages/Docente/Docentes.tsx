@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
-import { Navigate, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 
 import "./Docentes.css";
 import BackHomeButton from "../../components/common/BackHomeButton";
 import Card from "../../components/common/Card";
+import BuscadorSelector from "../../components/common/BuscadorSelector";
 import type { RolSistema } from "../../utils/rolesStorage";
 import { api, getApiErrorMessage } from "../../api/client";
 
@@ -19,10 +20,18 @@ interface Docente {
   telefono: string;
   correo: string;
   rolId: number | null;
+  usuario: { id: number; usuario: string; cedula: string | null } | null;
+}
+
+interface UsuarioVinculable {
+  id: number;
+  usuario: string;
+  cedula: string | null;
 }
 
 const formularioInicial = {
   cedula: "",
+  usuarioId: null as number | null,
   nombres: "",
   apellidos: "",
   fechaNacimiento: "",
@@ -55,15 +64,46 @@ function Docentes() {
 
   const docentesPorPagina = 10;
   const [rolesActivos, setRolesActivos] = useState<RolSistema[]>([]);
+  const [usuariosDocente, setUsuariosDocente] = useState<UsuarioVinculable[]>([]);
 
   useEffect(() => {
-    Promise.all([api.get<any[]>("/docentes"), api.get<RolSistema[]>("/roles")])
-      .then(([lista, roles]) => {
+    Promise.all([
+      api.get<any[]>("/docentes"),
+      api.get<RolSistema[]>("/roles"),
+      api.get<UsuarioVinculable[]>("/usuarios?rol=Docente"),
+    ])
+      .then(([lista, roles, usuarios]) => {
         setDocentes(lista.map((docente) => ({ ...docente, rolId: docente.rol?.id ?? null })));
         setRolesActivos(roles.filter((rol) => rol.estado === "Activo"));
+        setUsuariosDocente(usuarios);
       })
       .catch((error) => setMensaje(getApiErrorMessage(error)));
   }, []);
+
+  const opcionesUsuarios = useMemo(() => {
+    const vinculados = new Set(
+      docentes
+        .filter((docente) => docente.id !== editandoId && docente.usuario)
+        .map((docente) => docente.usuario!.id),
+    );
+    return usuariosDocente
+      .filter((usuario) => !vinculados.has(usuario.id))
+      .map((usuario) => ({
+        id: usuario.id,
+        titulo: usuario.usuario,
+        subtitulo: usuario.cedula ? `C.I. ${usuario.cedula}` : "Sin cédula registrada",
+      }));
+  }, [usuariosDocente, docentes, editandoId]);
+
+  function seleccionarUsuarioDocente(usuarioId: number | null) {
+    const usuario = usuariosDocente.find((item) => item.id === usuarioId) ?? null;
+    setFormulario((actual) => ({
+      ...actual,
+      usuarioId: usuario?.id ?? null,
+      cedula: usuario?.cedula ?? "",
+    }));
+    setMensaje("");
+  }
 
   const docentesFiltrados = useMemo(() => {
     const termino = busqueda.trim().toLowerCase();
@@ -117,14 +157,8 @@ function actualizarCampo(
 async function registrarDocente(event: FormEvent<HTMLFormElement>) {
   event.preventDefault();
 
-  const cedulaRepetida = docentes.some(
-    (docente) =>
-      docente.cedula === formulario.cedula.trim() &&
-      docente.id !== editandoId
-  );
-
-  if (cedulaRepetida) {
-    setMensaje("Ya existe un docente con esta cédula.");
+  if (!formulario.usuarioId) {
+    setMensaje("Selecciona el usuario del docente buscándolo por cédula.");
     return;
   }
 
@@ -141,7 +175,11 @@ async function registrarDocente(event: FormEvent<HTMLFormElement>) {
   };
 
   try {
-    const payload = { ...datosDocente, rol: { id: datosDocente.rolId } };
+    const payload = {
+      ...datosDocente,
+      rol: { id: datosDocente.rolId },
+      usuario: { id: datosDocente.usuarioId },
+    };
     if (editandoId !== null) {
       const guardado = await api.put<any>(`/docentes/${editandoId}`, payload);
       setDocentes((actuales) => actuales.map((docente) => docente.id === editandoId ? { ...guardado, rolId: guardado.rol?.id ?? null } : docente));
@@ -165,6 +203,7 @@ async function registrarDocente(event: FormEvent<HTMLFormElement>) {
 function editarDocente(docente: Docente) {
   setFormulario({
     cedula: docente.cedula,
+    usuarioId: docente.usuario?.id ?? null,
     nombres: docente.nombres,
     apellidos: docente.apellidos,
     fechaNacimiento: docente.fechaNacimiento,
@@ -236,19 +275,30 @@ return (
 
           <div className="students-form-grid">
 
+            <label style={{ gridColumn: "1 / -1" }}>
+              <span>Usuario del docente (buscar por cédula) *</span>
+              <BuscadorSelector
+                opciones={opcionesUsuarios}
+                seleccionId={formulario.usuarioId}
+                onSeleccionar={seleccionarUsuarioDocente}
+                placeholder="Buscar por cédula o nombre de usuario"
+                mensajeVacio="No se encontraron usuarios con rol Docente disponibles."
+                requerido
+              />
+              <small>
+                ¿Aún no existe el usuario de este docente? Créalo primero en{" "}
+                <Link to="/usuarios">Gestión de usuarios</Link>.
+              </small>
+            </label>
+
             <label>
               <span>Cédula</span>
 
               <input
                 required
-                inputMode="numeric"
-                maxLength={10}
-                pattern="[0-9]{10}"
-                placeholder="Ingrese la cédula"
+                readOnly
+                placeholder="Se completa al elegir el usuario"
                 value={formulario.cedula}
-                onChange={(e) =>
-                  actualizarCampo("cedula", e.target.value)
-                }
               />
             </label>
 

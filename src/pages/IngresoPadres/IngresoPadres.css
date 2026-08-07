@@ -157,6 +157,24 @@
     border: 1px solid #cbd5e1;
     background: #fff;
 }
+.parent-entry-hint {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding: 11px 14px;
+    margin-bottom: 17px;
+    color: #92400e;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    background: #fffbeb;
+    font-size: 0.83rem;
+    font-weight: 600;
+}
+.parent-entry-hint a {
+    color: #92400e;
+    font-weight: 800;
+    text-decoration: underline;
+}
 .parent-entry-message {
     display: flex;
     align-items: center;

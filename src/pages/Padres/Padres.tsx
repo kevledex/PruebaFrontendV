@@ -17,7 +17,7 @@ interface AlumnoApi {
   id: number;
   nombres: string;
   apellidos: string;
-  curso: { id: number };
+  curso: Curso | null;
 }
 
 interface LineaMateria {
@@ -52,9 +52,7 @@ function Padres() {
   const autenticado =
     localStorage.getItem("usuarioAutenticado") === "true";
 
-  const [cursos, setCursos] = useState<Curso[]>([]);
-  const [cursoId, setCursoId] = useState<number | null>(null);
-  const [alumnosTodos, setAlumnosTodos] = useState<AlumnoApi[]>([]);
+  const [misHijos, setMisHijos] = useState<AlumnoApi[]>([]);
   const [alumnoId, setAlumnoId] = useState<number | null>(null);
   const [periodos, setPeriodos] = useState<PeriodoAcademico[]>([]);
   const [periodoId, setPeriodoId] = useState<number | null>(null);
@@ -63,23 +61,21 @@ function Padres() {
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
-    Promise.all([api.get<Curso[]>("/cursos"), api.get<AlumnoApi[]>("/alumnos")])
-      .then(([cursosData, alumnosData]) => {
-        setCursos(cursosData);
-        setAlumnosTodos(alumnosData);
-        if (cursosData.length) setCursoId(cursosData[0].id);
+    api
+      .get<AlumnoApi[]>("/mis-representados")
+      .then((data) => {
+        setMisHijos(data);
+        setAlumnoId(data[0]?.id ?? null);
       })
       .catch((error) => setMensaje(getApiErrorMessage(error)));
   }, []);
 
-  const alumnosDelCurso = useMemo(
-    () => alumnosTodos.filter((alumno) => alumno.curso?.id === cursoId),
-    [alumnosTodos, cursoId],
+  const alumnoSeleccionado = useMemo(
+    () => misHijos.find((alumno) => alumno.id === alumnoId) ?? null,
+    [misHijos, alumnoId],
   );
 
-  useEffect(() => {
-    setAlumnoId(alumnosDelCurso[0]?.id ?? null);
-  }, [alumnosDelCurso]);
+  const cursoId = alumnoSeleccionado?.curso?.id ?? null;
 
   useEffect(() => {
     if (!cursoId) {
@@ -126,7 +122,7 @@ function Padres() {
     return <Navigate to="/login" replace />;
   }
 
-  const cursoSeleccionado = cursos.find((curso) => curso.id === cursoId);
+  const cursoSeleccionado = alumnoSeleccionado?.curso ?? null;
   const materiasConPromedio = informe?.materias.filter((m) => m.promedio != null) ?? [];
   const promedioGeneral = materiasConPromedio.length
     ? Number(
@@ -155,39 +151,26 @@ function Padres() {
             <div className="grades-header">
               <div>
                 <p className="section-label">Selección</p>
-                <h2>Curso, estudiante y trimestre</h2>
+                <h2>{misHijos.length > 1 ? "Hijo(a) y trimestre" : "Trimestre"}</h2>
               </div>
             </div>
 
-            <div className="period-filter">
-              <label htmlFor="curso-padres">Curso</label>
-              <select
-                id="curso-padres"
-                value={cursoId ?? ""}
-                onChange={(e) => setCursoId(Number(e.target.value))}
-              >
-                {cursos.map((curso) => (
-                  <option key={curso.id} value={curso.id}>
-                    {curso.grado} "{curso.paralelo}" · {curso.nivel}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="period-filter" style={{ marginTop: 14 }}>
-              <label htmlFor="estudiante-padres">Estudiante</label>
-              <select
-                id="estudiante-padres"
-                value={alumnoId ?? ""}
-                onChange={(e) => setAlumnoId(Number(e.target.value))}
-              >
-                {alumnosDelCurso.map((alumno) => (
-                  <option key={alumno.id} value={alumno.id}>
-                    {alumno.nombres} {alumno.apellidos}
-                  </option>
-                ))}
-              </select>
-            </div>
+            {misHijos.length > 1 && (
+              <div className="period-filter">
+                <label htmlFor="estudiante-padres">Hijo(a)</label>
+                <select
+                  id="estudiante-padres"
+                  value={alumnoId ?? ""}
+                  onChange={(e) => setAlumnoId(Number(e.target.value))}
+                >
+                  {misHijos.map((alumno) => (
+                    <option key={alumno.id} value={alumno.id}>
+                      {alumno.nombres} {alumno.apellidos}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
 
             <div className="period-filter" style={{ marginTop: 14 }}>
               <label htmlFor="periodo-padres">Trimestre</label>
@@ -208,9 +191,9 @@ function Padres() {
 
           {mensaje && <p className="parents-header p">{mensaje}</p>}
 
-          {!alumnosDelCurso.length && (
+          {!misHijos.length && !mensaje && (
             <Card as="section" className="grades-section">
-              <p>Este curso todavía no tiene estudiantes matriculados.</p>
+              <p>Todavía no tienes estudiantes asociados a tu cuenta. Contacta a la institución para vincular tu usuario con tu(s) hijo(a)(s).</p>
             </Card>
           )}
 

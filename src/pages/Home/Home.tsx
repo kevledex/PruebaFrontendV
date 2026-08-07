@@ -10,6 +10,7 @@ interface ModuleCard {
   path: string;
   colorClass: string;
   permission: string;
+  roles?: string[];
 }
 
 const modules: ModuleCard[] = [
@@ -35,6 +36,7 @@ const modules: ModuleCard[] = [
     icon: "bi-journal-check",
     path: "/notas",
     permission: "Notas",
+    roles: ["Admin", "Docente"],
     colorClass: "grades-card",
   },
   {
@@ -43,15 +45,26 @@ const modules: ModuleCard[] = [
     icon: "bi-calendar-check-fill",
     path: "/asistencia",
     permission: "Asistencia",
+    roles: ["Admin", "Docente"],
     colorClass: "attendance-card",
   },
   {
-    title: "Padres de familia",
-    description: "Consultar las calificaciones de los estudiantes.",
+    title: "Calificaciones de mis hijos",
+    description: "Consulta el rendimiento académico de tus hijos por trimestre.",
     icon: "bi-person-hearts",
     path: "/padres",
     permission: "Notas",
+    roles: ["Representante"],
     colorClass: "parents-card",
+  },
+  {
+    title: "Generar reporte",
+    description: "Genera el reporte PDF de calificaciones de un estudiante.",
+    icon: "bi-file-earmark-pdf-fill",
+    path: "/reportes",
+    permission: "Notas",
+    roles: ["Admin", "Docente"],
+    colorClass: "grades-card",
   },
   {
     title: "Ingreso de representantes",
@@ -75,6 +88,7 @@ const modules: ModuleCard[] = [
     icon: "bi-person-plus-fill",
     path: "/estudiantes",
     permission: "Estudiantes",
+    roles: ["Admin"],
     colorClass: "students-card",
   },
   {
@@ -121,9 +135,12 @@ function Home() {
       .toLowerCase();
   const permisos: string[] = JSON.parse(localStorage.getItem("permisosUsuario") ?? "[]");
   const permisosNormalizados = permisos.map(normalizar);
-  const modulosVisibles = modules.filter((modulo) =>
-    permisosNormalizados.includes(normalizar(modulo.permission)),
-  );
+  const rolUsuario = localStorage.getItem("rolUsuario") ?? "";
+  const modulosVisibles = modules.filter((modulo) => {
+    const tienePermiso = permisosNormalizados.includes(normalizar(modulo.permission));
+    const tieneRol = !modulo.roles || modulo.roles.includes(rolUsuario);
+    return tienePermiso && tieneRol;
+  });
 
   return (
     <MainLayout>

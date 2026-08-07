@@ -1,0 +1,16 @@
+.reportes-page{width:100%;max-width:900px;margin:0 auto;padding:35px 25px 55px}
+.reportes-header{display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:24px}
+.reportes-header p.reportes-label{margin:0 0 5px;color:#2563eb;font-size:.8rem;font-weight:800;text-transform:uppercase}
+.reportes-header h1{margin:0 0 7px;color:#1e293b}
+.reportes-header p{color:#64748b}
+.reportes-card{padding:28px;border:1px solid #e2e8f0;border-radius:16px;background:#fff}
+.reportes-card h2{margin:0 0 22px;color:#1e293b}
+.reportes-field{display:flex;flex-direction:column;gap:7px;margin-bottom:18px}
+.reportes-field span{color:#334155;font-size:.86rem;font-weight:700}
+.reportes-field select{min-height:44px;padding:10px 13px;border:1px solid #cbd5e1;border-radius:9px;outline:0;background:#fff}
+.reportes-field select:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.15)}
+.reportes-message{margin:0 0 18px;color:#dc2626;font-weight:700}
+.reportes-generate-button{display:inline-flex;align-items:center;gap:8px;min-height:46px;padding:0 20px;border:0;border-radius:9px;color:#fff;background:#2563eb;font-weight:700;cursor:pointer}
+.reportes-generate-button:hover:not(:disabled){background:#1d4ed8}
+.reportes-generate-button:disabled{background:#94a3b8;cursor:not-allowed}
+@media(max-width:700px){.reportes-page{padding:25px 15px}.reportes-header{align-items:stretch;flex-direction:column}.reportes-card{padding:22px 16px}}

@@ -5,6 +5,12 @@ import BuscadorSelector from "../../components/common/BuscadorSelector";
 import "./IngresoPadres.css";
 import { api, getApiErrorMessage } from "../../api/client";
 
+interface UsuarioVinculable {
+    id: number;
+    usuario: string;
+    cedula: string | null;
+}
+
 interface Representante {
     id: number;
     nombres: string;
@@ -15,6 +21,7 @@ interface Representante {
     parentesco: string;
     estudiante: string;
     curso: string;
+    usuario: UsuarioVinculable | null;
 }
 
 interface Curso {
@@ -32,7 +39,9 @@ interface AlumnoResumen {
     curso: Curso | null;
 }
 
-type RepresentanteForm = Omit<Representante, "id">;
+type RepresentanteForm = Omit<Representante, "id" | "usuario"> & {
+    usuarioId: number | null;
+};
 
 const formularioVacio: RepresentanteForm = {
     nombres: "",
@@ -43,6 +52,7 @@ const formularioVacio: RepresentanteForm = {
     parentesco: "",
     estudiante: "",
     curso: "",
+    usuarioId: null,
 };
 
 export default function IngresoPadres() {
@@ -57,14 +67,18 @@ export default function IngresoPadres() {
     const [busqueda, setBusqueda] = useState("");
     const [mensaje, setMensaje] = useState("");
 
+    const [usuariosRepresentante, setUsuariosRepresentante] = useState<UsuarioVinculable[]>([]);
+
     useEffect(() => {
         Promise.all([
             api.get<Representante[]>("/representantes"),
             api.get<AlumnoResumen[]>("/alumnos"),
+            api.get<UsuarioVinculable[]>("/usuarios?rol=Representante"),
         ])
-            .then(([listaRepresentantes, listaAlumnos]) => {
+            .then(([listaRepresentantes, listaAlumnos, listaUsuarios]) => {
                 setRepresentantes(listaRepresentantes);
                 setAlumnos(listaAlumnos);
+                setUsuariosRepresentante(listaUsuarios);
             })
             .catch((error) => setMensaje(getApiErrorMessage(error)));
     }, []);
@@ -86,6 +100,31 @@ export default function IngresoPadres() {
             ...actual,
             estudiante: alumno ? `${alumno.nombres} ${alumno.apellidos}` : "",
             curso: alumno?.curso ? `${alumno.curso.grado} "${alumno.curso.paralelo}"` : "",
+        }));
+        setMensaje("");
+    }
+
+    const opcionesUsuariosRepresentante = useMemo(() => {
+        const vinculados = new Set(
+            representantes
+                .filter((representante) => representante.id !== editandoId && representante.usuario)
+                .map((representante) => representante.usuario!.id),
+        );
+        return usuariosRepresentante
+            .filter((usuario) => !vinculados.has(usuario.id))
+            .map((usuario) => ({
+                id: usuario.id,
+                titulo: usuario.usuario,
+                subtitulo: usuario.cedula ? `C.I. ${usuario.cedula}` : "Sin cédula registrada",
+            }));
+    }, [usuariosRepresentante, representantes, editandoId]);
+
+    function seleccionarUsuarioRepresentante(usuarioId: number | null) {
+        const usuario = usuariosRepresentante.find((item) => item.id === usuarioId) ?? null;
+        setFormulario((actual) => ({
+            ...actual,
+            usuarioId: usuario?.id ?? null,
+            identificacion: usuario?.cedula ?? "",
         }));
         setMensaje("");
     }
@@ -121,12 +160,19 @@ export default function IngresoPadres() {
     async function guardarRepresentante(event: FormEvent<HTMLFormElement>) {
         event.preventDefault();
 
-        const datos = Object.fromEntries(
-            Object.entries(formulario).map(([clave, valor]) => [
+        if (!formulario.usuarioId) {
+            setMensaje("Selecciona el usuario del representante buscándolo por cédula.");
+            return;
+        }
+
+        const { usuarioId, ...camposTexto } = formulario;
+        const datosTexto = Object.fromEntries(
+            Object.entries(camposTexto).map(([clave, valor]) => [
                 clave,
-                valor.trim(),
+                (valor as string).trim(),
             ]),
-        ) as unknown as RepresentanteForm;
+        );
+        const datos = { ...datosTexto, usuario: { id: usuarioId } };
 
         try {
             if (editandoId !== null) {
@@ -146,9 +192,9 @@ export default function IngresoPadres() {
     }
 
     function editarRepresentante(representante: Representante) {
-        const { id, ...datos } = representante;
+        const { id, usuario, ...datos } = representante;
         setEditandoId(id);
-        setFormulario(datos);
+        setFormulario({ ...datos, usuarioId: usuario?.id ?? null });
         setAlumnoSeleccionadoId(
             alumnos.find((alumno) => `${alumno.nombres} ${alumno.apellidos}` === representante.estudiante)?.id ?? null,
         );
@@ -206,22 +252,42 @@ export default function IngresoPadres() {
 
                     <form onSubmit={guardarRepresentante}>
                         <fieldset>
+                            <legend>Usuario vinculado</legend>
+                            <div className="parent-entry-grid">
+                                <label style={{ gridColumn: "1 / -1" }}>
+                                    <span>Usuario del representante (buscar por cédula) *</span>
+                                    <BuscadorSelector
+                                        opciones={opcionesUsuariosRepresentante}
+                                        seleccionId={formulario.usuarioId}
+                                        onSeleccionar={seleccionarUsuarioRepresentante}
+                                        placeholder="Buscar por cédula o nombre de usuario"
+                                        mensajeVacio="No se encontraron usuarios con rol Representante disponibles."
+                                        requerido
+                                    />
+                                    <small>
+                                        ¿Aún no existe el usuario de este representante? Créalo primero en{" "}
+                                        <a href="/usuarios">Gestión de usuarios</a>.
+                                    </small>
+                                </label>
+                            </div>
+                        </fieldset>
+
+                        <fieldset>
                             <legend>Información personal</legend>
                             <div className="parent-entry-grid">
                                 <label>
                                     <span>Nombres *</span>
-                                    <input required value={formulario.nombres} onChange={(e) => 
+                                    <input required value={formulario.nombres} onChange={(e) =>
                                         actualizarCampo("nombres", e.target.value)} placeholder="Ingrese los nombres" />
                                 </label>
                                 <label>
                                     <span>Apellidos *</span>
-                                    <input required value={formulario.apellidos} onChange={(e) => 
+                                    <input required value={formulario.apellidos} onChange={(e) =>
                                         actualizarCampo("apellidos", e.target.value)} placeholder="Ingrese los apellidos" />
                                 </label>
                                 <label>
                                     <span>Cédula de identidad *</span>
-                                    <input required inputMode="numeric" pattern="[0-9]{10}" maxLength={10} value={formulario.identificacion} onChange={(e) => 
-                                        actualizarCampo("identificacion", e.target.value.replace(/\D/g, ""))} placeholder="10 dígitos" />
+                                    <input required readOnly value={formulario.identificacion} placeholder="Se completa al elegir el usuario" />
                                 </label>
                                 <label>
                                     <span>Parentesco *</span>
@@ -242,8 +308,8 @@ export default function IngresoPadres() {
                             <div className="parent-entry-grid">
                                 <label>
                                     <span>Teléfono *</span>
-                                    <input required type="tel" value={formulario.telefono} onChange={(e) => 
-                                        actualizarCampo("telefono", e.target.value)} placeholder="Ej. 099 123 4567" />
+                                    <input required type="tel" inputMode="numeric" maxLength={10} pattern="[0-9]{10}" value={formulario.telefono} onChange={(e) =>
+                                        actualizarCampo("telefono", e.target.value.replace(/\D/g, "").slice(0, 10))} placeholder="0991234567" />
                                 </label>
                                 <label>
                                     <span>Correo electrónico *</span>
@@ -255,6 +321,13 @@ export default function IngresoPadres() {
 
                         <fieldset>
                             <legend>Estudiante asociado</legend>
+                            <p className="parent-entry-hint">
+                                <i className="bi bi-info-circle-fill"></i>
+                                Importante: el estudiante debe estar registrado antes de poder
+                                asociarlo aquí. Si aún no existe, créalo primero en{" "}
+                                <a href="/estudiantes">Ingreso de estudiantes</a> y luego vuelve
+                                a esta pantalla.
+                            </p>
                             <div className="parent-entry-grid">
                                 <label>
                                     <span>Estudiante *</span>
@@ -266,12 +339,6 @@ export default function IngresoPadres() {
                                         mensajeVacio="No se encontraron estudiantes."
                                         requerido
                                     />
-                                    {alumnos.length === 0 && (
-                                        <small>
-                                            No hay estudiantes registrados. Créalos primero en{" "}
-                                            <a href="/estudiantes">Ingreso de estudiantes</a>.
-                                        </small>
-                                    )}
                                 </label>
                                 <label>
                                     <span>Curso y paralelo</span>
