@@ -81,8 +81,22 @@ async function request<T>(
   return parseResponse<T>(response);
 }
 
+async function requestBlob(path: string): Promise<Blob> {
+  const response = await fetch(`${API_URL}${path}`, { credentials: "include" });
+  if (!response.ok) {
+    const details = (await response.json().catch(() => ({}))) as ApiErrorBody;
+    throw new ApiError(
+      details.error ?? details.message ?? `Error HTTP ${response.status}`,
+      response.status,
+      details,
+    );
+  }
+  return response.blob();
+}
+
 export const api = {
   get: <T>(path: string) => request<T>(path),
+  getBlob: (path: string) => requestBlob(path),
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, {
       method: "POST",

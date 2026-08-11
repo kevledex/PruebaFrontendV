@@ -274,14 +274,25 @@ export default function Notas() {
   const esMedia = nivelActual === "MEDIA";
 
   useEffect(() => {
-    Promise.all([api.get<Curso[]>("/cursos"), api.get<AlumnoApi[]>("/alumnos")])
-      .then(([cursosData, alumnosData]) => {
+    api
+      .get<Curso[]>("/mis-cursos")
+      .then((cursosData) => {
         setCursos(cursosData);
-        setAlumnosTodos(alumnosData);
         if (cursosData.length) setCursoId(cursosData[0].id);
       })
       .catch((error) => setMensaje(getApiErrorMessage(error)));
   }, []);
+
+  useEffect(() => {
+    if (!cursoId) {
+      setAlumnosTodos([]);
+      return;
+    }
+    api
+      .get<AlumnoApi[]>(`/alumnos?cursoId=${cursoId}`)
+      .then(setAlumnosTodos)
+      .catch((error) => setMensaje(getApiErrorMessage(error)));
+  }, [cursoId]);
 
   useEffect(() => {
     setMensaje("");
@@ -323,7 +334,6 @@ export default function Notas() {
   }, [cursoId, esDestrezas]);
 
   const estudiantesDelCurso = alumnosTodos
-    .filter((al) => al.curso?.id === cursoId)
     .slice()
     .sort((a, b) => {
       const apellidos = a.apellidos.trim().localeCompare(b.apellidos.trim(), "es", { sensitivity: "base" });
@@ -336,12 +346,11 @@ export default function Notas() {
   const cargarActividadesYNotas = useCallback(() => {
     if (esDestrezas || !cursoId || !materiaCursoId || !periodoId) return;
 
-    Promise.all([api.get<Actividad[]>("/actividades"), api.get<Nota[]>("/notas")])
-      .then(([actividades, notas]) => {
-        const delContexto = actividades.filter(
-          (a) => a.materiaCurso?.id === materiaCursoId && a.periodoAcademico?.id === periodoId,
-        );
-
+    Promise.all([
+      api.get<Actividad[]>(`/actividades?materiaCursoId=${materiaCursoId}&periodoAcademicoId=${periodoId}`),
+      api.get<Nota[]>(`/notas?materiaCursoId=${materiaCursoId}&periodoAcademicoId=${periodoId}`),
+    ])
+      .then(([delContexto, notas]) => {
         const mapaNotas = new Map<string, Nota>();
         const mapaIdsNotas = new Map<string, number>();
         notas.forEach((n) => {

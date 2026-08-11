@@ -47,7 +47,6 @@ function obtenerFechaActual(): string {
 function Asistencia() {
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [cursoId, setCursoId] = useState<number | null>(null);
-  const [alumnosTodos, setAlumnosTodos] = useState<AlumnoApi[]>([]);
   const [estudiantes, setEstudiantes] = useState<Estudiante[]>([]);
   const [materias, setMaterias] = useState<Array<{ id: number; nombre: string }>>([]);
 
@@ -59,13 +58,11 @@ function Asistencia() {
 
   useEffect(() => {
     Promise.all([
-      api.get<Curso[]>("/cursos"),
-      api.get<AlumnoApi[]>("/alumnos"),
+      api.get<Curso[]>("/mis-cursos"),
       api.get<Array<{ id: number; nombre: string }>>("/materias"),
     ])
-      .then(([cursosData, alumnosData, listaMaterias]) => {
+      .then(([cursosData, listaMaterias]) => {
         setCursos(cursosData);
-        setAlumnosTodos(alumnosData);
         setMaterias(listaMaterias);
         if (cursosData.length) setCursoId(cursosData[0].id);
         if (listaMaterias.length) setAsignatura(listaMaterias[0].nombre);
@@ -78,17 +75,20 @@ function Asistencia() {
       setEstudiantes([]);
       return;
     }
-    setEstudiantes(
-      alumnosTodos
-        .filter((alumno) => alumno.curso?.id === cursoId)
-        .map((alumno) => ({
-          id: alumno.id,
-          nombre: `${alumno.nombres} ${alumno.apellidos}`,
-          identificacion: alumno.cedula,
-          estado: "Presente" as EstadoAsistencia,
-        })),
-    );
-  }, [cursoId, alumnosTodos]);
+    api
+      .get<AlumnoApi[]>(`/alumnos?cursoId=${cursoId}`)
+      .then((alumnosData) => {
+        setEstudiantes(
+          alumnosData.map((alumno) => ({
+            id: alumno.id,
+            nombre: `${alumno.nombres} ${alumno.apellidos}`,
+            identificacion: alumno.cedula,
+            estado: "Presente" as EstadoAsistencia,
+          })),
+        );
+      })
+      .catch((error) => setMensaje(getApiErrorMessage(error)));
+  }, [cursoId]);
 
   const cursoSeleccionado = cursos.find((curso) => curso.id === cursoId);
 
