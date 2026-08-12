@@ -4,6 +4,7 @@ import MainLayout from "../../layouts/MainLayout";
 import BuscadorSelector from "../../components/common/BuscadorSelector";
 import "./IngresoPadres.css";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 
 interface UsuarioVinculable {
     id: number;
@@ -57,6 +58,7 @@ const formularioVacio: RepresentanteForm = {
 
 export default function IngresoPadres() {
     const autenticado = localStorage.getItem("usuarioAutenticado") === "true";
+    const confirm = useConfirm();
     const [representantes, setRepresentantes] =
         useState<Representante[]>([]);
     const [alumnos, setAlumnos] = useState<AlumnoResumen[]>([]);
@@ -210,11 +212,10 @@ export default function IngresoPadres() {
     }
 
     async function eliminarRepresentante(representante: Representante) {
-        if (
-            window.confirm(
-                `¿Deseas eliminar a ${representante.nombres} ${representante.apellidos}?`,
-            )
-        ) {
+        const confirmado = await confirm(
+            `¿Deseas eliminar a ${representante.nombres} ${representante.apellidos}?`,
+        );
+        if (confirmado) {
             try {
                 await api.delete(`/representantes/${representante.id}`);
                 setRepresentantes((lista) => lista.filter((item) => item.id !== representante.id));

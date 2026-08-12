@@ -1,9 +1,13 @@
 
 import AppRoutes from "./routes/AppRoutes";
+import { ConfirmProvider } from "./context/ConfirmContext";
 
 function App() {
-  return <AppRoutes />;
-
+  return (
+    <ConfirmProvider>
+      <AppRoutes />
+    </ConfirmProvider>
+  );
 }
 
 export default App;

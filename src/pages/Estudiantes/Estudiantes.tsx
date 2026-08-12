@@ -6,6 +6,7 @@ import Card from "../../components/common/Card";
 import BuscadorSelector from "../../components/common/BuscadorSelector";
 import "./Estudiantes.css";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 
 interface CursoResumen {
   id: number;
@@ -45,6 +46,7 @@ const formularioInicial = {
 function Estudiantes() {
   const autenticado =
     localStorage.getItem("usuarioAutenticado") === "true";
+  const confirm = useConfirm();
 
   const [estudiantes, setEstudiantes] =
     useState<Estudiante[]>([]);
@@ -202,11 +204,10 @@ function Estudiantes() {
   }
 
   async function eliminarEstudiante(estudiante: Estudiante) {
-    if (
-      window.confirm(
-        `¿Deseas eliminar a ${estudiante.nombres} ${estudiante.apellidos}?`,
-      )
-    ) {
+    const confirmado = await confirm(
+      `¿Deseas eliminar a ${estudiante.nombres} ${estudiante.apellidos}?`,
+    );
+    if (confirmado) {
       try {
         await api.delete(`/alumnos/${estudiante.id}`);
         setEstudiantes((actuales) => actuales.filter((item) => item.id !== estudiante.id));

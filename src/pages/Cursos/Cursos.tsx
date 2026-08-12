@@ -1,10 +1,11 @@
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { Fragment, useEffect, useMemo, useState, type FormEvent } from "react";
 import { Navigate } from "react-router-dom";
 import MainLayout from "../../layouts/MainLayout";
 import BackHomeButton from "../../components/common/BackHomeButton";
 import Card from "../../components/common/Card";
 import "./Cursos.css";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 
 interface AnioLectivo {
   id: number;
@@ -31,6 +32,14 @@ interface Curso {
   tutor: DocenteResumen | null;
 }
 
+interface PeriodoAcademico {
+  id: number;
+  numero: number;
+  fechaInicio: string;
+  fechaFin: string;
+  cerrado: boolean;
+}
+
 const SOSTENIMIENTO_INSTITUCION = "FISCOMISIONAL";
 const niveles = ["INICIAL", "PREPARATORIA", "ELEMENTAL", "MEDIA"];
 const organizaciones = ["TRIMESTRAL", "QUIMESTRAL", "BIMESTRAL", "CUATRIMESTRAL"];
@@ -48,6 +57,7 @@ const formularioCursoInicial = {
 
 function Cursos() {
   const autenticado = localStorage.getItem("usuarioAutenticado") === "true";
+  const confirm = useConfirm();
 
   const [aniosLectivos, setAniosLectivos] = useState<AnioLectivo[]>([]);
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -56,6 +66,9 @@ function Cursos() {
   const [formularioCurso, setFormularioCurso] = useState(formularioCursoInicial);
   const [editandoCursoId, setEditandoCursoId] = useState<number | null>(null);
   const [mensaje, setMensaje] = useState("");
+  const [cursoExpandidoId, setCursoExpandidoId] = useState<number | null>(null);
+  const [periodosPorCurso, setPeriodosPorCurso] = useState<Record<number, PeriodoAcademico[]>>({});
+  const [cargandoPeriodos, setCargandoPeriodos] = useState(false);
 
   useEffect(() => {
     Promise.all([
@@ -120,7 +133,8 @@ function Cursos() {
   }
 
   async function eliminarAnio(anio: AnioLectivo) {
-    if (!window.confirm(`¿Deseas eliminar el año lectivo "${anio.nombre}"?`)) return;
+    const confirmado = await confirm(`¿Deseas eliminar el año lectivo "${anio.nombre}"?`);
+    if (!confirmado) return;
 
     try {
       await api.delete(`/anios-lectivos/${anio.id}`);
@@ -183,8 +197,51 @@ function Cursos() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
+  async function alternarPeriodos(curso: Curso) {
+    if (cursoExpandidoId === curso.id) {
+      setCursoExpandidoId(null);
+      return;
+    }
+    setCursoExpandidoId(curso.id);
+    if (periodosPorCurso[curso.id]) return;
+
+    setCargandoPeriodos(true);
+    try {
+      const periodos = await api.get<PeriodoAcademico[]>(`/cursos/${curso.id}/periodos`);
+      setPeriodosPorCurso((actuales) => ({ ...actuales, [curso.id]: periodos }));
+    } catch (error) {
+      setMensaje(getApiErrorMessage(error));
+    } finally {
+      setCargandoPeriodos(false);
+    }
+  }
+
+  async function alternarEstadoPeriodo(curso: Curso, periodo: PeriodoAcademico) {
+    const accion = periodo.cerrado ? "abrir" : "cerrar";
+    try {
+      const actualizado = await api.put<PeriodoAcademico>(
+        `/cursos/${curso.id}/periodos/${periodo.id}/${accion}`,
+        {},
+      );
+      setPeriodosPorCurso((actuales) => ({
+        ...actuales,
+        [curso.id]: (actuales[curso.id] ?? []).map((item) =>
+          item.id === periodo.id ? actualizado : item,
+        ),
+      }));
+      setMensaje(
+        actualizado.cerrado
+          ? `Trimestre ${periodo.numero} cerrado.`
+          : `Trimestre ${periodo.numero} reabierto.`,
+      );
+    } catch (error) {
+      setMensaje(getApiErrorMessage(error));
+    }
+  }
+
   async function eliminarCurso(curso: Curso) {
-    if (!window.confirm(`¿Deseas eliminar el curso ${curso.grado} "${curso.paralelo}"?`)) return;
+    const confirmado = await confirm(`¿Deseas eliminar el curso ${curso.grado} "${curso.paralelo}"?`);
+    if (!confirmado) return;
 
     try {
       await api.delete(`/cursos/${curso.id}`);
@@ -455,33 +512,78 @@ function Cursos() {
               </thead>
               <tbody>
                 {cursos.map((curso) => (
-                  <tr key={curso.id}>
-                    <td>{curso.grado} “{curso.paralelo}”</td>
-                    <td>{curso.nivel}</td>
-                    <td>{curso.anioLectivo?.nombre}</td>
-                    <td>{curso.tutor ? `${curso.tutor.nombres} ${curso.tutor.apellidos}` : "—"}</td>
-                    <td>{curso.tipoOrganizacion}</td>
-                    <td>
-                      <div className="students-actions">
-                        <button
-                          type="button"
-                          className="students-action-button students-action-button--edit"
-                          onClick={() => editarCurso(curso)}
-                          title="Editar"
-                        >
-                          <i className="bi bi-pencil-square"></i>
-                        </button>
-                        <button
-                          type="button"
-                          className="students-action-button students-action-button--delete"
-                          onClick={() => eliminarCurso(curso)}
-                          title="Eliminar"
-                        >
-                          <i className="bi bi-trash3"></i>
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
+                  <Fragment key={curso.id}>
+                    <tr>
+                      <td>{curso.grado} “{curso.paralelo}”</td>
+                      <td>{curso.nivel}</td>
+                      <td>{curso.anioLectivo?.nombre}</td>
+                      <td>{curso.tutor ? `${curso.tutor.nombres} ${curso.tutor.apellidos}` : "—"}</td>
+                      <td>{curso.tipoOrganizacion}</td>
+                      <td>
+                        <div className="students-actions">
+                          <button
+                            type="button"
+                            className="students-action-button students-action-button--info"
+                            onClick={() => alternarPeriodos(curso)}
+                            title="Ver trimestres"
+                          >
+                            <i className="bi bi-calendar3"></i>
+                          </button>
+                          <button
+                            type="button"
+                            className="students-action-button students-action-button--edit"
+                            onClick={() => editarCurso(curso)}
+                            title="Editar"
+                          >
+                            <i className="bi bi-pencil-square"></i>
+                          </button>
+                          <button
+                            type="button"
+                            className="students-action-button students-action-button--delete"
+                            onClick={() => eliminarCurso(curso)}
+                            title="Eliminar"
+                          >
+                            <i className="bi bi-trash3"></i>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {cursoExpandidoId === curso.id && (
+                      <tr>
+                        <td colSpan={6}>
+                          <div className="periodos-panel">
+                            {cargandoPeriodos && !periodosPorCurso[curso.id] ? (
+                              <p>Cargando trimestres…</p>
+                            ) : (periodosPorCurso[curso.id]?.length ?? 0) === 0 ? (
+                              <p>Este curso todavía no tiene trimestres generados.</p>
+                            ) : (
+                              <ul className="periodos-lista">
+                                {periodosPorCurso[curso.id].map((periodo) => (
+                                  <li key={periodo.id} className="periodos-item">
+                                    <span>
+                                      Trimestre {periodo.numero} ({periodo.fechaInicio} – {periodo.fechaFin})
+                                    </span>
+                                    <span className={periodo.cerrado ? "periodo-badge periodo-badge--cerrado" : "periodo-badge periodo-badge--abierto"}>
+                                      {periodo.cerrado ? "Cerrado" : "Abierto"}
+                                    </span>
+                                    <button
+                                      type="button"
+                                      className="students-action-button"
+                                      onClick={() => alternarEstadoPeriodo(curso, periodo)}
+                                      title={periodo.cerrado ? "Reabrir trimestre" : "Cerrar trimestre"}
+                                    >
+                                      <i className={periodo.cerrado ? "bi bi-unlock" : "bi bi-lock"}></i>
+                                      {periodo.cerrado ? " Reabrir" : " Cerrar"}
+                                    </button>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>

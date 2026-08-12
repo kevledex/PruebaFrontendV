@@ -26,6 +26,17 @@ let csrfHeader = "X-XSRF-TOKEN";
 // el token en CADA petición POST/PUT/DELETE (una GET extra por cada guardado).
 let csrfFetched = false;
 
+// Mensaje de reserva cuando el backend no envía un "error"/"message" legible
+// (p. ej. una respuesta que no es JSON). No debe mostrarse texto técnico como
+// "Error HTTP 500" al usuario final.
+function mensajePorDefectoSegunEstado(status: number): string {
+  if (status === 401) return "Tu sesión expiró. Vuelve a iniciar sesión.";
+  if (status === 403) return "No tienes permisos para realizar esta acción.";
+  if (status === 404) return "No se encontró la información solicitada.";
+  if (status >= 500) return "Ocurrió un problema en el servidor. Intenta nuevamente en unos minutos.";
+  return "No se pudo procesar la solicitud. Intenta nuevamente.";
+}
+
 async function parseResponse<T>(response: Response): Promise<T> {
   if (response.status === 204) return undefined as T;
 
@@ -33,7 +44,7 @@ async function parseResponse<T>(response: Response): Promise<T> {
   if (!response.ok) {
     const details = body as ApiErrorBody;
     throw new ApiError(
-      details.error ?? details.message ?? `Error HTTP ${response.status}`,
+      details.error ?? details.message ?? mensajePorDefectoSegunEstado(response.status),
       response.status,
       details,
     );
@@ -86,7 +97,7 @@ async function requestBlob(path: string): Promise<Blob> {
   if (!response.ok) {
     const details = (await response.json().catch(() => ({}))) as ApiErrorBody;
     throw new ApiError(
-      details.error ?? details.message ?? `Error HTTP ${response.status}`,
+      details.error ?? details.message ?? mensajePorDefectoSegunEstado(response.status),
       response.status,
       details,
     );

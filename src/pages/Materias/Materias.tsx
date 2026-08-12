@@ -5,6 +5,7 @@ import BackHomeButton from "../../components/common/BackHomeButton";
 import Card from "../../components/common/Card";
 import "../Cursos/Cursos.css";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 
 interface Materia {
   id: number;
@@ -36,6 +37,7 @@ const PERIODOS_PEDAGOGICOS_POR_DEFECTO = 4;
 
 function Materias() {
   const autenticado = localStorage.getItem("usuarioAutenticado") === "true";
+  const confirm = useConfirm();
 
   const [materias, setMaterias] = useState<Materia[]>([]);
   const [cursos, setCursos] = useState<Curso[]>([]);
@@ -126,7 +128,8 @@ function Materias() {
   }
 
   async function eliminarMateria(materia: Materia) {
-    if (!window.confirm(`¿Deseas eliminar la materia "${materia.nombre}"?`)) return;
+    const confirmado = await confirm(`¿Deseas eliminar la materia "${materia.nombre}"?`);
+    if (!confirmado) return;
     try {
       await api.delete(`/materias/${materia.id}`);
       setMaterias((actuales) => actuales.filter((item) => item.id !== materia.id));
