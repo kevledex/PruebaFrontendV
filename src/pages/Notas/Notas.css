@@ -346,6 +346,20 @@ body{
     flex-wrap:wrap;
 }
 
+.aviso-cambios-sin-guardar{
+    display:inline-flex;
+    align-items:center;
+    gap:7px;
+    margin-right:auto;
+    color:#b45309;
+    background:#fffbeb;
+    border:1px solid #fde68a;
+    border-radius:8px;
+    padding:8px 14px;
+    font-size:13.5px;
+    font-weight:600;
+}
+
 .btn-guardar{
     display:inline-flex;
     align-items:center;

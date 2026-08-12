@@ -3,6 +3,7 @@ import MainLayout from "../../layouts/MainLayout";
 import BackHomeButton from "../../components/common/BackHomeButton";
 import "./Mensajes.css";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 
 
 interface CursoApi {
@@ -27,6 +28,7 @@ interface MensajeEnviado {
 }
 
 function Mensajes() {
+  const confirm = useConfirm();
 
   const [cursos, setCursos] = useState<Curso[]>([]);
 
@@ -105,7 +107,7 @@ function Mensajes() {
 
   //funcion para eliminar el mensaje almacenado en el estado de mensajes enviados.
   async function eliminarMensaje(id: number) {
-    const confirmarEliminacion = window.confirm(
+    const confirmarEliminacion = await confirm(
       "¿Está seguro de eliminar este mensaje?"
     );
 

@@ -8,6 +8,7 @@ import Card from "../../components/common/Card";
 import BuscadorSelector from "../../components/common/BuscadorSelector";
 import type { RolSistema } from "../../utils/rolesStorage";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 
 interface Docente {
   id: number;
@@ -46,6 +47,7 @@ function Docentes() {
   const [parametros] = useSearchParams();
   const autenticado =
     localStorage.getItem("usuarioAutenticado") === "true";
+  const confirm = useConfirm();
 
   const [docentes, setDocentes] =
     useState<Docente[]>([]);
@@ -225,11 +227,10 @@ function editarDocente(docente: Docente) {
 
 
 async function eliminarDocente(docente: Docente) {
-  if (
-    window.confirm(
-      `¿Deseas eliminar a ${docente.nombres} ${docente.apellidos}?`
-    )
-  ) {
+  const confirmado = await confirm(
+    `¿Deseas eliminar a ${docente.nombres} ${docente.apellidos}?`
+  );
+  if (confirmado) {
     try {
       await api.delete(`/docentes/${docente.id}`);
       setDocentes((actuales) => actuales.filter((item) => item.id !== docente.id));

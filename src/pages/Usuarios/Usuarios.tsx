@@ -3,6 +3,7 @@ import MainLayout from "../../layouts/MainLayout";
 import BackHomeButton from "../../components/common/BackHomeButton";
 import Card from "../../components/common/Card";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 import "./Usuarios.css";
 
 type Rol = {
@@ -28,6 +29,7 @@ const formularioInicial = {
 };
 
 export default function Usuarios() {
+  const confirm = useConfirm();
   const [usuarios, setUsuarios] = useState<Usuario[]>([]);
   const [roles, setRoles] = useState<Rol[]>([]);
   const [formulario, setFormulario] = useState(formularioInicial);
@@ -111,6 +113,7 @@ export default function Usuarios() {
     setPasswordTocada(false);
     setMensaje("");
     setError("");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
   function cancelarEdicion() {
@@ -129,7 +132,8 @@ export default function Usuarios() {
   }
 
   async function eliminarUsuario(item: Usuario) {
-    if (!window.confirm(`¿Deseas eliminar el usuario "${item.usuario}"?`)) return;
+    const confirmado = await confirm(`¿Deseas eliminar el usuario "${item.usuario}"?`);
+    if (!confirmado) return;
     try {
       await api.delete(`/usuarios/${item.id}`);
       setUsuarios((lista) => lista.filter((usuario) => usuario.id !== item.id));

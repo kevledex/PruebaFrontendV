@@ -279,6 +279,74 @@
     white-space:nowrap;
 }
 
+.students-action-button--info{
+    background:#2563eb;
+}
+
+.students-action-button--info:hover{
+    background:#1d4ed8;
+    transform:translateY(-2px);
+}
+
+.periodos-panel{
+    background:#f8fafc;
+    border-radius:12px;
+    padding:1.2rem 1.5rem;
+}
+
+.periodos-panel p{
+    margin:0;
+    color:#64748b;
+}
+
+.periodos-lista{
+    list-style:none;
+    margin:0;
+    padding:0;
+    display:flex;
+    flex-direction:column;
+    gap:.75rem;
+}
+
+.periodos-item{
+    display:flex;
+    align-items:center;
+    gap:1rem;
+    flex-wrap:wrap;
+}
+
+.periodos-item .students-action-button{
+    width:auto;
+    padding:.5rem 1rem;
+    gap:.4rem;
+    background:#64748b;
+    font-size:.85rem;
+    font-weight:600;
+}
+
+.periodos-item .students-action-button:hover{
+    background:#475569;
+}
+
+.periodo-badge{
+    display:inline-block;
+    padding:.3rem .6rem;
+    border-radius:999px;
+    font-size:.78rem;
+    font-weight:700;
+    white-space:nowrap;
+}
+
+.periodo-badge--abierto{
+    color:#15803d;
+    background:#dcfce7;
+}
+
+.periodo-badge--cerrado{
+    color:#b91c1c;
+    background:#fee2e2;
+}
+
 @keyframes fadeIn{
     from{ opacity:0; transform:translateY(15px); }
     to{ opacity:1; transform:translateY(0); }

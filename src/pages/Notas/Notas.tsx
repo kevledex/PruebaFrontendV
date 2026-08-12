@@ -4,6 +4,7 @@ import BackHomeButton from "../../components/common/BackHomeButton";
 import Card from "../../components/common/Card";
 import "./Notas.css";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 
 type Nivel = "INICIAL" | "PREPARATORIA" | "ELEMENTAL" | "MEDIA";
 
@@ -218,6 +219,7 @@ const idsColumnasMediaVacias: Record<CategoriaMedia, Array<number | null>> = { t
 
 export default function Notas() {
   const fecha = hoyIso();
+  const confirm = useConfirm();
 
   const [cursos, setCursos] = useState<Curso[]>([]);
   const [cursoId, setCursoId] = useState<number | null>(null);
@@ -235,6 +237,7 @@ export default function Notas() {
   const [examenId, setExamenId] = useState<number | null>(null);
   const [estudiantesMedia, setEstudiantesMedia] = useState<EstudianteMedia[]>([]);
   const [modalMediaAbierto, setModalMediaAbierto] = useState<CategoriaInsumo | null>(null);
+  const [huboEdicionMedia, setHuboEdicionMedia] = useState(false);
   const respaldoMedia = useRef<{
     columnas: typeof columnasMediaVacias;
     ids: typeof idsColumnasMediaVacias;
@@ -246,6 +249,7 @@ export default function Notas() {
   const [idsColumnasElemental, setIdsColumnasElemental] = useState<Array<number | null>>([]);
   const [estudiantesElemental, setEstudiantesElemental] = useState<EstudianteSimple[]>([]);
   const [modalElementalAbierto, setModalElementalAbierto] = useState(false);
+  const [huboEdicionElemental, setHuboEdicionElemental] = useState(false);
   const respaldoElemental = useRef<{
     columnas: string[];
     ids: Array<number | null>;
@@ -256,6 +260,7 @@ export default function Notas() {
   const [columnasDestreza, setColumnasDestreza] = useState<Array<{ ambito: string; destreza: string }>>([]);
   const [idsColumnasDestreza, setIdsColumnasDestreza] = useState<Array<Record<number, number>>>([]);
   const [estudiantesDestreza, setEstudiantesDestreza] = useState<EstudianteDestreza[]>([]);
+  const [huboEdicionDestrezas, setHuboEdicionDestrezas] = useState(false);
 
   const [notaIdPorCelda, setNotaIdPorCelda] = useState<Map<string, number>>(new Map());
   const [mensaje, setMensajeTexto] = useState("");
@@ -343,10 +348,10 @@ export default function Notas() {
     .map((al) => ({ id: al.id, nombre: `${al.nombres} ${al.apellidos}` }));
 
   // --- Carga: EGB Media / Elemental (actividades + notas) ---
-  const cargarActividadesYNotas = useCallback(() => {
-    if (esDestrezas || !cursoId || !materiaCursoId || !periodoId) return;
+  const cargarActividadesYNotas = useCallback((): Promise<void> => {
+    if (esDestrezas || !cursoId || !materiaCursoId || !periodoId) return Promise.resolve();
 
-    Promise.all([
+    return Promise.all([
       api.get<Actividad[]>(`/actividades?materiaCursoId=${materiaCursoId}&periodoAcademicoId=${periodoId}`),
       api.get<Nota[]>(`/notas?materiaCursoId=${materiaCursoId}&periodoAcademicoId=${periodoId}`),
     ])
@@ -418,15 +423,15 @@ export default function Notas() {
   }, [esDestrezas, esMedia, esElemental, cursoId, materiaCursoId, periodoId, alumnosTodos]);
 
   // --- Carga: Inicial / Preparatoria (destrezas) ---
-  const cargarDestrezas = useCallback(() => {
+  const cargarDestrezas = useCallback((): Promise<void> => {
     if (!esDestrezas || !periodoId || !estudiantesDelCurso.length) {
       setColumnasDestreza([]);
       setIdsColumnasDestreza([]);
       setEstudiantesDestreza([]);
-      return;
+      return Promise.resolve();
     }
 
-    Promise.all(
+    return Promise.all(
       estudiantesDelCurso.map((est) =>
         api
           .get<EvaluacionDestreza[]>(`/evaluaciones-destreza/alumno/${est.id}/periodo/${periodoId}`)
@@ -480,6 +485,20 @@ export default function Notas() {
     cargarDestrezas();
   }, [cargarDestrezas]);
 
+  // Avisa al cerrar/recargar la pestaña si hay calificaciones o destrezas
+  // capturadas en pantalla que todavía no se enviaron al servidor.
+  useEffect(() => {
+    const hayCambiosSinGuardar = huboEdicionMedia || huboEdicionElemental || huboEdicionDestrezas;
+    if (!hayCambiosSinGuardar) return;
+
+    const avisarAntesDeSalir = (event: BeforeUnloadEvent) => {
+      event.preventDefault();
+      event.returnValue = "";
+    };
+    window.addEventListener("beforeunload", avisarAntesDeSalir);
+    return () => window.removeEventListener("beforeunload", avisarAntesDeSalir);
+  }, [huboEdicionMedia, huboEdicionElemental, huboEdicionDestrezas]);
+
   // ---------- Modal EGB Media ----------
   function abrirModalMedia(insumo: CategoriaInsumo) {
     respaldoMedia.current = {
@@ -487,17 +506,28 @@ export default function Notas() {
       ids: { ...idsColumnasMedia },
       estudiantes: structuredClone(estudiantesMedia),
     };
+    setHuboEdicionMedia(false);
     setMensaje("");
     setModalMediaAbierto(insumo);
   }
 
-  function cerrarModalMedia() {
+  async function cerrarModalMedia() {
+    if (huboEdicionMedia) {
+      const confirmado = await confirm({
+        title: "Cambios sin guardar",
+        message: "Tienes calificaciones sin guardar. Si sales ahora se perderán.",
+        confirmLabel: "Salir sin guardar",
+        cancelLabel: "Seguir editando",
+      });
+      if (!confirmado) return;
+    }
     if (respaldoMedia.current) {
       setColumnasMedia(respaldoMedia.current.columnas);
       setIdsColumnasMedia(respaldoMedia.current.ids);
       setEstudiantesMedia(respaldoMedia.current.estudiantes);
       respaldoMedia.current = null;
     }
+    setHuboEdicionMedia(false);
     setMensaje("");
     setModalMediaAbierto(null);
   }
@@ -509,6 +539,7 @@ export default function Notas() {
       [categoria]: [...prev[categoria], `${ETIQUETA_CATEGORIA[categoria]} ${prev[categoria].length + 1}`],
     }));
     setEstudiantesMedia((prev) => prev.map((est) => ({ ...est, [categoria]: [...est[categoria], ""] })));
+    setHuboEdicionMedia(true);
   }
 
   function eliminarColumnaMedia(categoria: CategoriaMedia, indice: number) {
@@ -517,6 +548,7 @@ export default function Notas() {
     setEstudiantesMedia((prev) =>
       prev.map((est) => ({ ...est, [categoria]: est[categoria].filter((_, i) => i !== indice) })),
     );
+    setHuboEdicionMedia(true);
   }
 
   function renombrarColumnaMedia(categoria: CategoriaMedia, indice: number, nombre: string) {
@@ -524,6 +556,7 @@ export default function Notas() {
       ...prev,
       [categoria]: prev[categoria].map((n, i) => (i === indice ? nombre : n)),
     }));
+    setHuboEdicionMedia(true);
   }
 
   function cambiarCeldaMedia(categoria: CategoriaMedia, filaId: number, indice: number, valor: string) {
@@ -532,10 +565,12 @@ export default function Notas() {
         est.id === filaId ? { ...est, [categoria]: est[categoria].map((v, i) => (i === indice ? valor : v)) } : est,
       ),
     );
+    setHuboEdicionMedia(true);
   }
 
   function cambiarProyectoExamen(campo: "proyecto" | "examen", filaId: number, valor: string) {
     setEstudiantesMedia((prev) => prev.map((est) => (est.id === filaId ? { ...est, [campo]: valor } : est)));
+    setHuboEdicionMedia(true);
   }
 
   function calcularDesglose(est: EstudianteMedia) {
@@ -590,11 +625,17 @@ export default function Notas() {
             : await api.post<Actividad>("/actividades", payloadActividad);
           ids[i] = actividad.id;
 
-          for (const est of estudiantesMedia) {
-            const valorCelda = est[categoria][i];
-            if (!valorCelda || valorCelda.trim() === "") continue;
-            await guardarNota(est.id, actividad.id, Number(valorCelda));
-          }
+          // Las notas de cada estudiante para esta actividad son
+          // independientes entre sí: se envían en paralelo en vez de una a
+          // la vez, para que guardar una clase completa no tarde
+          // (cantidad de estudiantes) veces el tiempo de una sola petición.
+          await Promise.all(
+            estudiantesMedia.map((est) => {
+              const valorCelda = est[categoria][i];
+              if (!valorCelda || valorCelda.trim() === "") return undefined;
+              return guardarNota(est.id, actividad.id, Number(valorCelda));
+            }),
+          );
         }
         nuevosIds[categoria] = ids;
       }
@@ -615,10 +656,11 @@ export default function Notas() {
           ? await api.put<Actividad>(`/actividades/${idProyecto}`, payload)
           : await api.post<Actividad>("/actividades", payload);
         idProyecto = actividad.id;
-        for (const est of estudiantesMedia) {
-          if (!est.proyecto.trim()) continue;
-          await guardarNota(est.id, actividad.id, Number(est.proyecto));
-        }
+        await Promise.all(
+          estudiantesMedia.map((est) =>
+            est.proyecto.trim() ? guardarNota(est.id, actividad.id, Number(est.proyecto)) : undefined,
+          ),
+        );
         setProyectoId(idProyecto);
       }
 
@@ -637,15 +679,17 @@ export default function Notas() {
           ? await api.put<Actividad>(`/actividades/${idExamen}`, payload)
           : await api.post<Actividad>("/actividades", payload);
         idExamen = actividad.id;
-        for (const est of estudiantesMedia) {
-          if (!est.examen.trim()) continue;
-          await guardarNota(est.id, actividad.id, Number(est.examen));
-        }
+        await Promise.all(
+          estudiantesMedia.map((est) =>
+            est.examen.trim() ? guardarNota(est.id, actividad.id, Number(est.examen)) : undefined,
+          ),
+        );
         setExamenId(idExamen);
       }
 
       setMensaje("Notas guardadas correctamente.", "exito");
-      cargarActividadesYNotas();
+      setHuboEdicionMedia(false);
+      await cargarActividadesYNotas();
       return true;
     } catch (error) {
       setMensaje(getApiErrorMessage(error));
@@ -685,17 +729,28 @@ export default function Notas() {
       ids: [...idsColumnasElemental],
       estudiantes: structuredClone(estudiantesElemental),
     };
+    setHuboEdicionElemental(false);
     setMensaje("");
     setModalElementalAbierto(true);
   }
 
-  function cerrarModalElemental() {
+  async function cerrarModalElemental() {
+    if (huboEdicionElemental) {
+      const confirmado = await confirm({
+        title: "Cambios sin guardar",
+        message: "Tienes calificaciones sin guardar. Si sales ahora se perderán.",
+        confirmLabel: "Salir sin guardar",
+        cancelLabel: "Seguir editando",
+      });
+      if (!confirmado) return;
+    }
     if (respaldoElemental.current) {
       setColumnasElemental(respaldoElemental.current.columnas);
       setIdsColumnasElemental(respaldoElemental.current.ids);
       setEstudiantesElemental(respaldoElemental.current.estudiantes);
       respaldoElemental.current = null;
     }
+    setHuboEdicionElemental(false);
     setMensaje("");
     setModalElementalAbierto(false);
   }
@@ -704,22 +759,26 @@ export default function Notas() {
     setIdsColumnasElemental((prev) => [...prev, null]);
     setColumnasElemental((prev) => [...prev, `Actividad ${prev.length + 1}`]);
     setEstudiantesElemental((prev) => prev.map((est) => ({ ...est, notas: [...est.notas, ""] })));
+    setHuboEdicionElemental(true);
   }
 
   function eliminarColumnaElemental(indice: number) {
     setIdsColumnasElemental((prev) => prev.filter((_, i) => i !== indice));
     setColumnasElemental((prev) => prev.filter((_, i) => i !== indice));
     setEstudiantesElemental((prev) => prev.map((est) => ({ ...est, notas: est.notas.filter((_, i) => i !== indice) })));
+    setHuboEdicionElemental(true);
   }
 
   function renombrarColumnaElemental(indice: number, nombre: string) {
     setColumnasElemental((prev) => prev.map((n, i) => (i === indice ? nombre : n)));
+    setHuboEdicionElemental(true);
   }
 
   function cambiarCeldaElemental(filaId: number, indice: number, valor: string) {
     setEstudiantesElemental((prev) =>
       prev.map((est) => (est.id === filaId ? { ...est, notas: est.notas.map((v, i) => (i === indice ? valor : v)) } : est)),
     );
+    setHuboEdicionElemental(true);
   }
 
   async function guardarElemental(): Promise<boolean> {
@@ -745,15 +804,18 @@ export default function Notas() {
           : await api.post<Actividad>("/actividades", payloadActividad);
         nuevosIds[i] = actividad.id;
 
-        for (const est of estudiantesElemental) {
-          const valorCelda = est.notas[i];
-          if (!valorCelda || valorCelda.trim() === "") continue;
-          await guardarNota(est.id, actividad.id, Number(valorCelda));
-        }
+        await Promise.all(
+          estudiantesElemental.map((est) => {
+            const valorCelda = est.notas[i];
+            if (!valorCelda || valorCelda.trim() === "") return undefined;
+            return guardarNota(est.id, actividad.id, Number(valorCelda));
+          }),
+        );
       }
       setIdsColumnasElemental(nuevosIds);
       setMensaje("Notas guardadas correctamente.", "exito");
-      cargarActividadesYNotas();
+      setHuboEdicionElemental(false);
+      await cargarActividadesYNotas();
       return true;
     } catch (error) {
       setMensaje(getApiErrorMessage(error));
@@ -775,6 +837,7 @@ export default function Notas() {
   function agregarColumnaDestreza() {
     setColumnasDestreza((prev) => [...prev, { ambito: "", destreza: `Destreza ${prev.length + 1}` }]);
     setEstudiantesDestreza((prev) => prev.map((est) => ({ ...est, escalas: [...est.escalas, ""] })));
+    setHuboEdicionDestrezas(true);
   }
 
   function eliminarColumnaDestreza(indice: number) {
@@ -791,16 +854,19 @@ export default function Notas() {
         return nuevoMapa;
       }),
     );
+    setHuboEdicionDestrezas(true);
   }
 
   function cambiarColumnaDestreza(indice: number, campo: "ambito" | "destreza", valor: string) {
     setColumnasDestreza((prev) => prev.map((col, i) => (i === indice ? { ...col, [campo]: valor } : col)));
+    setHuboEdicionDestrezas(true);
   }
 
   function cambiarEscala(filaId: number, indice: number, valor: string) {
     setEstudiantesDestreza((prev) =>
       prev.map((est) => (est.id === filaId ? { ...est, escalas: est.escalas.map((v, i) => (i === indice ? valor : v)) } : est)),
     );
+    setHuboEdicionDestrezas(true);
   }
 
   async function guardarDestrezas() {
@@ -817,27 +883,30 @@ export default function Notas() {
     try {
       for (let colIndice = 0; colIndice < columnasDestreza.length; colIndice++) {
         const columna = columnasDestreza[colIndice];
-        for (let filaIndice = 0; filaIndice < estudiantesDestreza.length; filaIndice++) {
-          const est = estudiantesDestreza[filaIndice];
-          const valor = est.escalas[colIndice];
-          if (!valor) continue;
-          const payload = {
-            alumno: { id: est.id },
-            periodoAcademico: { id: periodoId },
-            ambitoAprendizaje: columna.ambito.trim(),
-            destreza: columna.destreza.trim(),
-            escala: valor,
-          };
-          const existenteId = idsColumnasDestreza[filaIndice]?.[colIndice];
-          if (existenteId) {
-            await api.put(`/evaluaciones-destreza/${existenteId}`, payload);
-          } else {
-            await api.post("/evaluaciones-destreza", payload);
-          }
-        }
+        // Una destreza por estudiante es independiente de las demás: se
+        // envían todas las filas de esta columna en paralelo en vez de una
+        // por una.
+        await Promise.all(
+          estudiantesDestreza.map((est, filaIndice) => {
+            const valor = est.escalas[colIndice];
+            if (!valor) return undefined;
+            const payload = {
+              alumno: { id: est.id },
+              periodoAcademico: { id: periodoId },
+              ambitoAprendizaje: columna.ambito.trim(),
+              destreza: columna.destreza.trim(),
+              escala: valor,
+            };
+            const existenteId = idsColumnasDestreza[filaIndice]?.[colIndice];
+            return existenteId
+              ? api.put(`/evaluaciones-destreza/${existenteId}`, payload)
+              : api.post("/evaluaciones-destreza", payload);
+          }),
+        );
       }
       setMensaje("Destrezas guardadas correctamente.", "exito");
-      cargarDestrezas();
+      setHuboEdicionDestrezas(false);
+      await cargarDestrezas();
     } catch (error) {
       setMensaje(getApiErrorMessage(error));
     } finally {
@@ -1031,6 +1100,11 @@ export default function Notas() {
             </div>
 
             <div className="acciones" style={{ marginTop: 20 }}>
+              {huboEdicionDestrezas && (
+                <span className="aviso-cambios-sin-guardar">
+                  <i className="bi bi-exclamation-triangle-fill"></i> Tienes cambios sin guardar
+                </span>
+              )}
               <button className="btn-guardar" onClick={guardarDestrezas} disabled={guardando}>
                 {guardando ? "Guardando..." : "Guardar destrezas"}
               </button>
@@ -1175,6 +1249,11 @@ export default function Notas() {
                   )}
 
                   <div className="modal-footer">
+                    {huboEdicionElemental && (
+                      <span className="aviso-cambios-sin-guardar">
+                        <i className="bi bi-exclamation-triangle-fill"></i> Tienes cambios sin guardar
+                      </span>
+                    )}
                     <button className="btn-cancelar" onClick={cerrarModalElemental}>
                       Cancelar
                     </button>
@@ -1292,6 +1371,11 @@ export default function Notas() {
               </div>
 
               <div className="acciones" style={{ marginTop: 20 }}>
+                {huboEdicionMedia && (
+                  <span className="aviso-cambios-sin-guardar">
+                    <i className="bi bi-exclamation-triangle-fill"></i> Tienes cambios sin guardar
+                  </span>
+                )}
                 <button className="btn-guardar" onClick={guardarMedia} disabled={guardando}>
                   {guardando ? "Guardando..." : "Guardar Proyecto y Examen"}
                 </button>
@@ -1384,6 +1468,11 @@ export default function Notas() {
                   )}
 
                   <div className="modal-footer">
+                    {huboEdicionMedia && (
+                      <span className="aviso-cambios-sin-guardar">
+                        <i className="bi bi-exclamation-triangle-fill"></i> Tienes cambios sin guardar
+                      </span>
+                    )}
                     <button className="btn-cancelar" onClick={cerrarModalMedia}>
                       Cancelar
                     </button>

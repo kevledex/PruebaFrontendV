@@ -4,10 +4,12 @@ import MainLayout from "../../layouts/MainLayout"; import BackHomeButton from ".
 import Card from "../../components/common/Card";
 import { permisosDisponibles, type EstadoRol, type RolSistema } from "../../utils/rolesStorage";
 import { api, getApiErrorMessage } from "../../api/client";
+import { useConfirm } from "../../context/ConfirmContext";
 import "./Roles.css";
 
 const inicial = { nombre: "", descripcion: "", permisos: [] as string[], estado: "Activo" as EstadoRol };
 function Roles() {
+    const confirm = useConfirm();
 
     const [roles, setRoles] = useState<RolSistema[]>([]),
         [form, setForm] = useState(inicial),
@@ -75,7 +77,7 @@ function Roles() {
         if (r.protegido) return setMensaje("El rol Administrador no puede eliminarse.");
         if (r.usuarios > 0)
             return setMensaje(`No se puede eliminar "${r.nombre}" porque tiene usuarios asignados.`);
-        if (confirm(`\u00bfDeseas eliminar el rol "${r.nombre}"?`)) {
+        if (await confirm(`\u00bfDeseas eliminar el rol "${r.nombre}"?`)) {
             try {
                 await api.delete(`/roles/${r.id}`); setRoles(a => a.filter(x => x.id !== r.id));
                 setMensaje("Rol eliminado correctamente.")
